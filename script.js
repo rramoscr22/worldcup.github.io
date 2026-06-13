@@ -1,17 +1,17 @@
 // 1. Participant definition blocks
 const participants = [
-    { name: "Aldo", teams: ["MEX", "CAN", "BRA", "HAI"], losses: 0, draws: 0 },
-    { name: "Fredy", teams: ["RSA", "BIH", "MAR", "SCO"], losses: 0, draws: 0 },
-    { name: "Bonilla", teams: ["KOR", "QAT", "SUI", "CZE"], losses: 0, draws: 0 },
-    { name: "Hergi", teams: ["USA", "IRN", "ENG", "WAL"], losses: 0, draws: 0 },
-    { name: "Mao", teams: ["ARG", "FRA", "GER", "ESP"], losses: 0, draws: 0 },
-    { name: "George", teams: ["POR", "BEL", "NED", "ITA"], losses: 0, draws: 0 },
-    { name: "Juan", teams: ["URU", "COL", "CRO", "SEN"], losses: 0, draws: 0 },
-    { name: "Vic", teams: ["TUN", "MAR", "JPN", "ECU"], losses: 0, draws: 0 },
-    { name: "JP", teams: ["GHA", "CMR", "SRB", "SUI"], losses: 0, draws: 0 },
-    { name: "Richard", teams: ["DEN", "AUS", "POL", "PER"], losses: 0, draws: 0 },
-    { name: "Rodrigo", teams: ["UKR", "SWE", "AUT", "CZE"], losses: 0, draws: 0 },
-    { name: "David", teams: ["KSA", "EGY", "CRC", "PAN"], losses: 0, draws: 0 }
+    { name: "Aldo", teams: ["COL", "SUI", "RSA", "JOR"], losses: 0, draws: 0 },
+    { name: "Fredy", teams: ["NET", "NOR", "CAN", "KSA"], losses: 0, draws: 0 },
+    { name: "Bonilla", teams: ["GER", "CIV", "ALG", "CUR"], losses: 0, draws: 0 },
+    { name: "Hergi", teams: ["CRO", "USA", "AUT", "QAT"], losses: 0, draws: 0 },
+    { name: "Mao", teams: ["FRA", "IRQ", "SCO", "ECU"], losses: 0, draws: 0 },
+    { name: "George", teams: ["ARG", "MEX", "CZE", "IRN"], losses: 0, draws: 0 },
+    { name: "Juan", teams: ["BRA", "URU", "AUS", "BIH"], losses: 0, draws: 0 },
+    { name: "Vic", teams: ["SPA", "SWE", "PAR", "CDR"], losses: 0, draws: 0 },
+    { name: "JP", teams: ["BEL", "JPN", "GHA", "HAI"], losses: 0, draws: 0 },
+    { name: "Richard", teams: ["ENG", "SEN", "TUN", "NZL"], losses: 0, draws: 0 },
+    { name: "Rodrigo", teams: ["MAR", "TUR", "PAN", "CPV"], losses: 0, draws: 0 },
+    { name: "David", teams: ["POR", "EGY", "KOR", "UZB"], losses: 0, draws: 0 }
 ];
 
 // 2. Group stage details
