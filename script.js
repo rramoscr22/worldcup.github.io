@@ -1,48 +1,108 @@
+// 1. Participant definition blocks
+const participants = [
+    { name: "Aldo", teams: ["MEX", "CAN", "BRA", "HAI"], losses: 0, draws: 0 },
+    { name: "Fredy", teams: ["RSA", "BIH", "MAR", "SCO"], losses: 0, draws: 0 },
+    { name: "Bonilla", teams: ["KOR", "QAT", "SUI", "CZE"], losses: 0, draws: 0 },
+    { name: "Hergi", teams: ["USA", "IRN", "ENG", "WAL"], losses: 0, draws: 0 },
+    { name: "Mao", teams: ["ARG", "FRA", "GER", "ESP"], losses: 0, draws: 0 },
+    { name: "George", teams: ["POR", "BEL", "NED", "ITA"], losses: 0, draws: 0 },
+    { name: "Juan", teams: ["URU", "COL", "CRO", "SEN"], losses: 0, draws: 0 },
+    { name: "Vic", teams: ["TUN", "MAR", "JPN", "ECU"], losses: 0, draws: 0 },
+    { name: "JP", teams: ["GHA", "CMR", "SRB", "SUI"], losses: 0, draws: 0 },
+    { name: "Richard", teams: ["DEN", "AUS", "POL", "PER"], losses: 0, draws: 0 },
+    { name: "Rodrigo", teams: ["UKR", "SWE", "AUT", "CZE"], losses: 0, draws: 0 },
+    { name: "David", teams: ["KSA", "EGY", "CRC", "PAN"], losses: 0, draws: 0 }
+];
+
+// 2. Group stage details
 const worldCupData = {
     "Group A": {
         "fixtures": [
-            {"home": "MEX", "away": "RSA", "score": "2 - 0", "time": "FINAL"},
-            {"home": "KOR", "away": "CZE", "score": "2 - 1", "time": "FINAL"},
+            {"home": "MEX", "away": "RSA", "score": "2 - 0", "time": "FINAL"}, // RSA gets +1 Loss
+            {"home": "KOR", "away": "CZE", "score": "2 - 1", "time": "FINAL"}, // CZE gets +1 Loss
             {"home": "CZE", "away": "RSA", "score": "  -  ", "time": "June 17"},
             {"home": "MEX", "away": "KOR", "score": "  -  ", "time": "June 18"}
         ],
         "standings": [
-            {"team": "MEX", "pts": "3"},
-            {"team": "KOR", "pts": "3"},
-            {"team": "CZE", "pts": "0"},
-            {"team": "RSA", "pts": "0"}
+            {"team": "MEX", "pts": "3"}, {"team": "KOR", "pts": "3"},
+            {"team": "CZE", "pts": "0"}, {"team": "RSA", "pts": "0"}
         ]
     },
     "Group B": {
         "fixtures": [
-            {"home": "CAN", "away": "BIH", "score": "1 - 1", "time": "FINAL"},
+            {"home": "CAN", "away": "BIH", "score": "1 - 1", "time": "FINAL"}, // CAN & BIH both get +1 Draw
             {"home": "QAT", "away": "SUI", "score": "  -  ", "time": "3:00 PM"},
             {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"}
         ],
         "standings": [
-            {"team": "CAN", "pts": "1"},
-            {"team": "BIH", "pts": "1"},
-            {"team": "QAT", "pts": "0"},
-            {"team": "SUI", "pts": "0"}
+            {"team": "CAN", "pts": "1"}, {"team": "BIH", "pts": "1"},
+            {"team": "QAT", "pts": "0"}, {"team": "SUI", "pts": "0"}
         ]
     }
-    // Add groups C through L inside this object as needed!
 };
 
-const container = document.getElementById('dashboard-container');
+// --- LOGIC ENGINE ---
 
+function calculateScores() {
+    Object.values(worldCupData).forEach(group => {
+        group.fixtures.forEach(match => {
+            if (match.time === "FINAL") {
+                const scores = match.score.split("-").map(s => parseInt(s.trim()));
+                
+                if (scores[0] === scores[1]) {
+                    // It's a DRAW: Both teams get +1 Draw point
+                    const homeOwner = participants.find(p => p.teams.includes(match.home));
+                    const awayOwner = participants.find(p => p.teams.includes(match.away));
+                    
+                    if (homeOwner) homeOwner.draws += 1;
+                    if (awayOwner) awayOwner.draws += 1;
+                } else {
+                    // It's a decisive win/loss outcome
+                    const losingTeam = (scores[0] < scores[1]) ? match.home : match.away;
+                    const owner = participants.find(p => p.teams.includes(losingTeam));
+                    if (owner) owner.losses += 1;
+                }
+            }
+        });
+    });
+
+    // Sort: Lowest losses first. If tied, lowest draws first.
+    participants.sort((a, b) => {
+        if (a.losses !== b.losses) {
+            return a.losses - b.losses;
+        }
+        return a.draws - b.draws;
+    });
+}
+
+// Run Calculations
+calculateScores();
+
+// 1. Render Leaderboard Rows
+const leaderboardBody = document.getElementById('leaderboard-body');
+participants.forEach((player, index) => {
+    leaderboardBody.innerHTML += `
+        <tr>
+            <td><strong>#${index + 1}</strong></td>
+            <td><strong>${player.name}</strong></td>
+            <td class="teams-list" title="${player.teams.join(', ')}">${player.teams.join(', ')}</td>
+            <td><span class="badge loss-badge">${player.losses}</span></td>
+            <td><span class="badge draw-badge">${player.draws}</span></td>
+        </tr>
+    `;
+});
+
+// 2. Render Tournament Brackets
+const container = document.getElementById('dashboard-container');
 Object.entries(worldCupData).forEach(([groupName, data]) => {
-    // Create Group Card
     const card = document.createElement('div');
     card.className = 'card';
 
-    // Header Banner
     const header = document.createElement('div');
     header.className = 'group-header';
     header.innerText = groupName;
     card.appendChild(header);
 
-    // Fixtures Grid
     const fixturesDiv = document.createElement('div');
     fixturesDiv.className = 'fixtures';
     data.fixtures.forEach(f => {
@@ -58,12 +118,10 @@ Object.entries(worldCupData).forEach(([groupName, data]) => {
     });
     card.appendChild(fixturesDiv);
 
-    // Divider
     const divider = document.createElement('div');
     divider.className = 'divider';
     card.appendChild(divider);
 
-    // Standings Panel
     const standingsDiv = document.createElement('div');
     standingsDiv.className = 'standings';
     standingsDiv.innerHTML = `<div class="standings-title">Ranking</div>`;
@@ -76,6 +134,5 @@ Object.entries(worldCupData).forEach(([groupName, data]) => {
         `;
     });
     card.appendChild(standingsDiv);
-
     container.appendChild(card);
 });
