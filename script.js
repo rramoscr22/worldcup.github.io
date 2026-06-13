@@ -24,30 +24,105 @@ const worldCupData = {
             {"home": "MEX", "away": "KOR", "score": "  -  ", "time": "June 18"}
         ],
         "standings": [
-            {"team": "MEX", "pts": "3"}, {"team": "KOR", "pts": "3"},
-            {"team": "CZE", "pts": "0"}, {"team": "RSA", "pts": "0"}
+            {"team": "MEX"}, {"team": "KOR"},
+            {"team": "CZE"}, {"team": "RSA"}
         ]
     },
     "Group B": {
         "fixtures": [
             {"home": "CAN", "away": "BIH", "score": "1 - 1", "time": "FINAL"}, // CAN & BIH both get +1 Draw
-            {"home": "QAT", "away": "SUI", "score": "  -  ", "time": "3:00 PM"},
+            {"home": "QAT", "away": "SUI", "score": "1 - 1", "time": "FINAL"}, // QAT & SUI both get +1 Draw
             {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"}
         ],
         "standings": [
-            {"team": "CAN", "pts": "1"}, {"team": "BIH", "pts": "1"},
-            {"team": "QAT", "pts": "0"}, {"team": "SUI", "pts": "0"}
+            {"team": "CAN"}, {"team": "BIH"},
+            {"team": "QAT"}, {"team": "SUI"}
+        ]
+    },
+    "Group C": {
+        "fixtures": [
+            {"home": "BRA", "away": "MAR", "score": "  -  ", "time": "June 13"}, // CAN & BIH both get +1 Draw
+            {"home": "HAI", "away": "SCO", "score": "  -  ", "time": "June 13"}, // QAT & SUI both get +1 Draw
+            {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"}
+        ],
+        "standings": [
+            {"team": "BRA"}, {"team": "MAR"},
+            {"team": "HAI"}, {"team": "SCO"}
         ]
     }
 };
 
 // --- LOGIC ENGINE ---
 
+function parseMatchScore(score) {
+    const match = score.match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
+    if (!match) return null;
+    return [Number(match[1]), Number(match[2])];
+}
+
+function formatGoalDifference(value) {
+    return value > 0 ? `+${value}` : `${value}`;
+}
+
+function calculateGroupStandings() {
+    Object.values(worldCupData).forEach(group => {
+        const statsByTeam = {};
+
+        group.standings.forEach(entry => {
+            const team = typeof entry === "string" ? entry : entry.team;
+            if (!team) return;
+            statsByTeam[team] = { pts: 0, gf: 0, ga: 0 };
+        });
+
+        group.fixtures.forEach(match => {
+            if (match.time !== "FINAL") return;
+
+            const scores = parseMatchScore(match.score);
+            if (!scores) return;
+
+            const [homeGoals, awayGoals] = scores;
+
+            if (!statsByTeam[match.home]) statsByTeam[match.home] = { pts: 0, gf: 0, ga: 0 };
+            if (!statsByTeam[match.away]) statsByTeam[match.away] = { pts: 0, gf: 0, ga: 0 };
+
+            statsByTeam[match.home].gf += homeGoals;
+            statsByTeam[match.home].ga += awayGoals;
+            statsByTeam[match.away].gf += awayGoals;
+            statsByTeam[match.away].ga += homeGoals;
+
+            if (homeGoals > awayGoals) {
+                statsByTeam[match.home].pts += 3;
+            } else if (homeGoals < awayGoals) {
+                statsByTeam[match.away].pts += 3;
+            } else {
+                statsByTeam[match.home].pts += 1;
+                statsByTeam[match.away].pts += 1;
+            }
+        });
+
+        group.standings = Object.entries(statsByTeam)
+            .map(([team, stats]) => ({
+                team,
+                pts: stats.pts,
+                gf: stats.gf,
+                ga: stats.ga,
+                gd: stats.gf - stats.ga
+            }))
+            .sort((a, b) => b.pts - a.pts || b.gd - a.gd || a.team.localeCompare(b.team));
+    });
+}
+
 function calculateScores() {
+    participants.forEach(player => {
+        player.losses = 0;
+        player.draws = 0;
+    });
+
     Object.values(worldCupData).forEach(group => {
         group.fixtures.forEach(match => {
             if (match.time === "FINAL") {
-                const scores = match.score.split("-").map(s => parseInt(s.trim()));
+                const scores = parseMatchScore(match.score);
+                if (!scores) return;
                 
                 if (scores[0] === scores[1]) {
                     // It's a DRAW: Both teams get +1 Draw point
@@ -76,6 +151,7 @@ function calculateScores() {
 }
 
 // Run Calculations
+calculateGroupStandings();
 calculateScores();
 
 // 1. Render Leaderboard Rows
@@ -129,7 +205,7 @@ Object.entries(worldCupData).forEach(([groupName, data]) => {
         standingsDiv.innerHTML += `
             <div class="standings-row">
                 <span>${idx + 1}. ${entry.team}</span>
-                <span>${entry.pts} PTS</span>
+                <span>${entry.pts} PTS | GD ${formatGoalDifference(entry.gd)}</span>
             </div>
         `;
     });
