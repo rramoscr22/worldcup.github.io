@@ -11,24 +11,31 @@
             color: #ffffff;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
         header {
             background-color: #1e293b;
             padding: 20px;
             border-bottom: 2px solid #22d3ee;
+            flex-shrink: 0;
         }
         header h1 {
             margin: 0;
             color: #22d3ee;
             font-size: 24px;
         }
+        /* Main Layout split side-by-side */
         .main-layout {
             display: flex;
             flex-direction: row;
-            height: calc(100vh - 70px);
+            flex-grow: 1;
+            overflow: hidden; /* Prevents the whole page from broken scrolling */
         }
+        /* Sidebar stays fixed on the left */
         .sidebar-leaderboard {
-            width: 380px;
+            width: 360px;
             background-color: #1e293b;
             padding: 20px;
             box-shadow: 4px 0 10px rgba(0,0,0,0.4);
@@ -72,14 +79,9 @@
             text-align: center;
             min-width: 15px;
         }
-        .loss-badge {
-            background-color: #ef4444;
-            color: white;
-        }
-        .draw-badge {
-            background-color: #eab308;
-            color: #0f172a;
-        }
+        .loss-badge { background-color: #ef4444; color: white; }
+        .draw-badge { background-color: #eab308; color: #0f172a; }
+        
         .teams-list {
             font-size: 11px;
             color: #94a3b8;
@@ -88,22 +90,28 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .groups-container {
+
+        /* SCROLL DOWN GRID CONFIGURATION */
+        .groups-scroll-area {
             flex-grow: 1;
-            display: flex;
-            gap: 20px;
+            overflow-y: auto; /* Enables vertical down-scrolling */
             padding: 20px;
-            overflow-x: auto;
-            align-items: flex-start;
         }
+        .groups-container {
+            display: grid;
+            /* Automatically fits as many 260px columns as possible, grid wraps down */
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        
         .card {
             background-color: #ffffff;
             color: #0f172a;
             border-radius: 4px;
-            width: 260px;
-            flex-shrink: 0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         .group-header {
             background-color: #00f0ff;
@@ -136,7 +144,7 @@
         }
         .score.final { background-color: #f1f5f9; }
         .divider { border-top: 1px solid #cbd5e1; margin: 10px; }
-        .standings { padding: 0 10px 10px 10px; }
+        .standings { padding: 0 10px 10px 10px; margin-top: auto; }
         .standings-title { font-size: 11px; color: #94a3b8; margin-bottom: 5px; }
         .standings-row {
             display: flex;
@@ -175,8 +183,10 @@
             </table>
         </div>
 
-        <div class="groups-container" id="dashboard-container">
-            </div>
+        <div class="groups-scroll-area">
+            <div class="groups-container" id="dashboard-container">
+                </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
