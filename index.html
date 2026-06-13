@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIFA World Cup 2026 Dashboard</title>
+    <title>FIFA World Cup 2026 - Friends Pool</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,76 +22,122 @@
             color: #22d3ee;
             font-size: 24px;
         }
-        .container {
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            height: calc(100vh - 70px);
+        }
+        .sidebar-leaderboard {
+            width: 380px;
+            background-color: #1e293b;
+            padding: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.4);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-leaderboard h2 {
+            margin-top: 0;
+            color: #00f0ff;
+            font-size: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 6px;
+            font-size: 12px;
+        }
+        th {
+            color: #94a3b8;
+            border-bottom: 2px solid #334155;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        tr {
+            border-bottom: 1px solid #334155;
+        }
+        tr:hover {
+            background-color: #273549;
+        }
+        .badge {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            text-align: center;
+            min-width: 15px;
+        }
+        .loss-badge {
+            background-color: #ef4444;
+            color: white;
+        }
+        .draw-badge {
+            background-color: #eab308;
+            color: #0f172a;
+        }
+        .teams-list {
+            font-size: 11px;
+            color: #94a3b8;
+            max-width: 110px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .groups-container {
+            flex-grow: 1;
             display: flex;
             gap: 20px;
             padding: 20px;
             overflow-x: auto;
-            white-space: nowrap;
             align-items: flex-start;
         }
         .card {
             background-color: #ffffff;
             color: #0f172a;
             border-radius: 4px;
-            width: 280px;
+            width: 260px;
             flex-shrink: 0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             overflow: hidden;
-            display: inline-block;
-            vertical-align: top;
         }
         .group-header {
             background-color: #00f0ff;
             text-align: center;
             font-weight: bold;
             padding: 10px;
-            font-size: 16px;
+            font-size: 14px;
             text-transform: uppercase;
         }
-        .fixtures {
-            padding: 10px;
-        }
+        .fixtures { padding: 10px; }
         .match-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 8px;
-            font-size: 13px;
+            font-size: 12px;
         }
-        .match-time {
-            color: #64748b;
-            font-size: 11px;
-            width: 65px;
-        }
-        .team {
-            font-weight: bold;
-            width: 40px;
-        }
+        .match-time { color: #64748b; font-size: 10px; width: 60px; }
+        .team { font-weight: bold; width: 40px; }
         .team.away { text-align: right; }
         .score {
             background-color: #e2e8f0;
             font-family: monospace;
             font-weight: bold;
-            padding: 2px 6px;
+            padding: 2px 4px;
             border: 1px solid #cbd5e1;
             border-radius: 3px;
-            width: 45px;
+            width: 40px;
             text-align: center;
         }
         .score.final { background-color: #f1f5f9; }
-        .divider {
-            border-top: 1px solid #cbd5e1;
-            margin: 10px;
-        }
-        .standings {
-            padding: 0 10px 10px 10px;
-        }
-        .standings-title {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-bottom: 5px;
-        }
+        .divider { border-top: 1px solid #cbd5e1; margin: 10px; }
+        .standings { padding: 0 10px 10px 10px; }
+        .standings-title { font-size: 11px; color: #94a3b8; margin-bottom: 5px; }
         .standings-row {
             display: flex;
             justify-content: space-between;
@@ -99,7 +145,7 @@
             padding: 4px 8px;
             margin-bottom: 4px;
             border-radius: 2px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
         }
     </style>
@@ -107,11 +153,31 @@
 <body>
 
     <header>
-        <h1>Group Stage Scores & Fixtures</h1>
+        <h1>World Cup 2026 Group Stage & Friends Pool</h1>
     </header>
 
-    <div class="container" id="dashboard-container">
+    <div class="main-layout">
+        <div class="sidebar-leaderboard">
+            <h2>Leaderboard</h2>
+            <p style="font-size: 11px; color: #94a3b8;">Sorted by lowest Losses, then lowest Draws.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Teams</th>
+                        <th>L</th>
+                        <th>D</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    </tbody>
+            </table>
         </div>
+
+        <div class="groups-container" id="dashboard-container">
+            </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
