@@ -160,6 +160,62 @@ const worldCupData = {
     }
 };
 
+const teamFlagMap = {
+    ARG: "🇦🇷",
+    AUS: "🇦🇺",
+    AUT: "🇦🇹",
+    BEL: "🇧🇪",
+    BIH: "🇧🇦",
+    BRA: "🇧🇷",
+    CAN: "🇨🇦",
+    COL: "🇨🇴",
+    CRO: "🇭🇷",
+    CZE: "🇨🇿",
+    CUR: "🇨🇼",
+    CPV: "🇨🇻",
+    CDR: "🇨🇩",
+    ECU: "🇪🇨",
+    EGY: "🇪🇬",
+    ENG: "🇬🇧",
+    FRA: "🇫🇷",
+    GHA: "🇬🇭",
+    GER: "🇩🇪",
+    HAI: "🇭🇹",
+    IRN: "🇮🇷",
+    IRQ: "🇮🇶",
+    JPN: "🇯🇵",
+    JOR: "🇯🇴",
+    KOR: "🇰🇷",
+    KSA: "🇸🇦",
+    MAR: "🇲🇦",
+    MEX: "🇲🇽",
+    NET: "🇳🇱",
+    NOR: "🇳🇴",
+    NZL: "🇳🇿",
+    PAN: "🇵🇦",
+    POR: "🇵🇹",
+    QAT: "🇶🇦",
+    RSA: "🇿🇦",
+    SEN: "🇸🇳",
+    SCO: "🏴",
+    PAR: "🇵🇾",
+    CIV: "🇨🇮",
+    ALG: "🇩🇿",
+    SPA: "🇪🇸",
+    SWE: "🇸🇪",
+    TUN: "🇹🇳",
+    TUR: "🇹🇷",
+    UZB: "🇺🇿",
+    URU: "🇺🇾",
+    USA: "🇺🇸",
+    SUI: "🇨🇭"
+};
+
+function getTeamLabel(teamCode) {
+    const flag = teamFlagMap[teamCode] || "";
+    return `${flag} ${teamCode}`.trim();
+}
+
 
 // --- LOGIC ENGINE ---
 
@@ -295,9 +351,9 @@ Object.entries(worldCupData).forEach(([groupName, data]) => {
         fixturesDiv.innerHTML += `
             <div class="match-row">
                 <span class="match-time">${f.time}</span>
-                <span class="team">${f.home}</span>
+                <span class="team"><span class="team-label">${getTeamLabel(f.home)}</span></span>
                 <span class="score ${isFinal ? 'final' : ''}">${f.score}</span>
-                <span class="team away">${f.away}</span>
+                <span class="team away"><span class="team-label">${getTeamLabel(f.away)}</span></span>
             </div>
         `;
     });
@@ -313,7 +369,7 @@ Object.entries(worldCupData).forEach(([groupName, data]) => {
     data.standings.forEach((entry, idx) => {
         standingsDiv.innerHTML += `
             <div class="standings-row">
-                <span>${idx + 1}. ${entry.team}</span>
+                <span>${idx + 1}. <span class="team-label">${getTeamLabel(entry.team)}</span></span>
                 <span>${entry.pts} PTS | GD ${formatGoalDifference(entry.gd)}</span>
             </div>
         `;
