@@ -21,7 +21,9 @@ const worldCupData = {
             {"home": "MEX", "away": "RSA", "score": "2 - 0", "time": "FINAL"}, // RSA gets +1 Loss
             {"home": "KOR", "away": "CZE", "score": "2 - 1", "time": "FINAL"}, // CZE gets +1 Loss
             {"home": "CZE", "away": "RSA", "score": "  -  ", "time": "June 17"},
-            {"home": "MEX", "away": "KOR", "score": "  -  ", "time": "June 18"}
+            {"home": "MEX", "away": "KOR", "score": "  -  ", "time": "June 18"},
+            {"home": "CZE", "away": "MEX", "score": "  -  ", "time": "TBD"},
+            {"home": "RSA", "away": "KOR", "score": "  -  ", "time": "TBD"}
         ],
         "standings": [
             {"team": "MEX"}, {"team": "KOR"},
@@ -32,7 +34,11 @@ const worldCupData = {
         "fixtures": [
             {"home": "CAN", "away": "BIH", "score": "1 - 1", "time": "FINAL"}, // CAN & BIH both get +1 Draw
             {"home": "QAT", "away": "SUI", "score": "1 - 1", "time": "FINAL"}, // QAT & SUI both get +1 Draw
-            {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"}
+            {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"},
+            {"home": "CAN", "away": "QAT", "score": "  -  ", "time": "June 20"},
+            {"home": "SUI", "away": "CAN", "score": "  -  ", "time": "TBD"},
+            {"home": "BIH", "away": "QAT", "score": "  -  ", "time": "TBD"}
+
         ],
         "standings": [
             {"team": "CAN"}, {"team": "BIH"},
@@ -41,16 +47,119 @@ const worldCupData = {
     },
     "Group C": {
         "fixtures": [
-            {"home": "BRA", "away": "MAR", "score": "1 - 1", "time": "FINAL"}, // CAN & BIH both get +1 Draw
-            {"home": "HAI", "away": "SCO", "score": "0 - 1", "time": "FINAL"}, // QAT & SUI both get +1 Draw
-            {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"}
+            {"home": "BRA", "away": "MAR", "score": "1 - 1", "time": "FINAL"},
+            {"home": "HAI", "away": "SCO", "score": "0 - 1", "time": "FINAL"},
+            {"home": "SCO", "away": "MAR", "score": "  -  ", "time": "June 18"},
+            {"home": "BRA", "away": "HAI", "score": "  -  ", "time": "June 20"},
+            {"home": "SCO", "away": "BRA", "score": "  -  ", "time": "TBD"},
+            {"home": "MAR", "away": "HAI", "score": "  -  ", "time": "TBD"}
         ],
         "standings": [
             {"team": "BRA"}, {"team": "MAR"},
             {"team": "HAI"}, {"team": "SCO"}
         ]
+    },
+    "Group D": {
+        "fixtures": [
+            {"home": "USA", "away": "PAR", "score": "4 - 1", "time": "FINAL"},
+            {"home": "AUS", "away": "TUR", "score": "  -  ", "time": "TBD"},
+            {"home": "USA", "away": "AUS", "score": "  -  ", "time": "TBD"},
+            {"home": "PAR", "away": "TUR", "score": "  -  ", "time": "TBD"},
+            {"home": "USA", "away": "TUR", "score": "  -  ", "time": "TBD"},
+            {"home": "PAR", "away": "AUS", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "USA"}, {"team": "PAR"}, {"team": "AUS"}, {"team": "TUR"} ]
+    },
+    "Group E": {
+        "fixtures": [
+            {"home": "GER", "away": "CUR", "score": "  -  ", "time": "TBD"},
+            {"home": "CIV", "away": "ECU", "score": "  -  ", "time": "TBD"},
+            {"home": "GER", "away": "CIV", "score": "  -  ", "time": "TBD"},
+            {"home": "CUR", "away": "ECU", "score": "  -  ", "time": "TBD"},
+            {"home": "GER", "away": "ECU", "score": "  -  ", "time": "TBD"},
+            {"home": "CUR", "away": "CIV", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "GER"}, {"team": "CUR"}, {"team": "CIV"}, {"team": "ECU"} ]
+    },
+    "Group F": {
+        "fixtures": [
+            {"home": "NET", "away": "JPN", "score": "  -  ", "time": "TBD"},
+            {"home": "SWE", "away": "TUN", "score": "  -  ", "time": "TBD"},
+            {"home": "NET", "away": "SWE", "score": "  -  ", "time": "TBD"},
+            {"home": "JPN", "away": "TUN", "score": "  -  ", "time": "TBD"},
+            {"home": "NET", "away": "TUN", "score": "  -  ", "time": "TBD"},
+            {"home": "JPN", "away": "SWE", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "NET"}, {"team": "JPN"}, {"team": "SWE"}, {"team": "TUN"} ]
+    },
+    "Group G": {
+        "fixtures": [
+            {"home": "BEL", "away": "EGY", "score": "  -  ", "time": "TBD"},
+            {"home": "IRN", "away": "NZL", "score": "  -  ", "time": "TBD"},
+            {"home": "BEL", "away": "IRN", "score": "  -  ", "time": "TBD"},
+            {"home": "EGY", "away": "NZL", "score": "  -  ", "time": "TBD"},
+            {"home": "BEL", "away": "NZL", "score": "  -  ", "time": "TBD"},
+            {"home": "EGY", "away": "IRN", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "BEL"}, {"team": "EGY"}, {"team": "IRN"}, {"team": "NZL"} ]
+    },
+    "Group H": {
+        "fixtures": [
+            {"home": "SPA", "away": "CPV", "score": "  -  ", "time": "TBD"},
+            {"home": "KSA", "away": "URU", "score": "  -  ", "time": "TBD"},
+            {"home": "SPA", "away": "KSA", "score": "  -  ", "time": "TBD"},
+            {"home": "CPV", "away": "URU", "score": "  -  ", "time": "TBD"},
+            {"home": "SPA", "away": "URU", "score": "  -  ", "time": "TBD"},
+            {"home": "CPV", "away": "KSA", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "SPA"}, {"team": "CPV"}, {"team": "KSA"}, {"team": "URU"} ]
+    },
+    "Group I": {
+        "fixtures": [
+            {"home": "FRA", "away": "SEN", "score": "  -  ", "time": "TBD"},
+            {"home": "IRQ", "away": "NOR", "score": "  -  ", "time": "TBD"},
+            {"home": "FRA", "away": "IRQ", "score": "  -  ", "time": "TBD"},
+            {"home": "SEN", "away": "NOR", "score": "  -  ", "time": "TBD"},
+            {"home": "FRA", "away": "NOR", "score": "  -  ", "time": "TBD"},
+            {"home": "SEN", "away": "IRQ", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "FRA"}, {"team": "SEN"}, {"team": "IRQ"}, {"team": "NOR"} ]
+    },
+    "Group J": {
+        "fixtures": [
+            {"home": "ARG", "away": "ALG", "score": "  -  ", "time": "TBD"},
+            {"home": "AUT", "away": "JOR", "score": "  -  ", "time": "TBD"},
+            {"home": "ARG", "away": "AUT", "score": "  -  ", "time": "TBD"},
+            {"home": "ALG", "away": "JOR", "score": "  -  ", "time": "TBD"},
+            {"home": "ARG", "away": "JOR", "score": "  -  ", "time": "TBD"},
+            {"home": "ALG", "away": "AUT", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "ARG"}, {"team": "ALG"}, {"team": "AUT"}, {"team": "JOR"} ]
+    },
+    "Group K": {
+        "fixtures": [
+            {"home": "POR", "away": "CDR", "score": "  -  ", "time": "TBD"},
+            {"home": "UZB", "away": "COL", "score": "  -  ", "time": "TBD"},
+            {"home": "POR", "away": "UZB", "score": "  -  ", "time": "TBD"},
+            {"home": "CDR", "away": "COL", "score": "  -  ", "time": "TBD"},
+            {"home": "POR", "away": "COL", "score": "  -  ", "time": "TBD"},
+            {"home": "CDR", "away": "UZB", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "POR"}, {"team": "CDR"}, {"team": "UZB"}, {"team": "COL"} ]
+    },
+    "Group L": {
+        "fixtures": [
+            {"home": "ENG", "away": "CRO", "score": "  -  ", "time": "TBD"},
+            {"home": "GHA", "away": "PAN", "score": "  -  ", "time": "TBD"},
+            {"home": "ENG", "away": "GHA", "score": "  -  ", "time": "TBD"},
+            {"home": "CRO", "away": "PAN", "score": "  -  ", "time": "TBD"},
+            {"home": "ENG", "away": "PAN", "score": "  -  ", "time": "TBD"},
+            {"home": "CRO", "away": "GHA", "score": "  -  ", "time": "TBD"}
+        ],
+        "standings": [ {"team": "ENG"}, {"team": "CRO"}, {"team": "GHA"}, {"team": "PAN"} ]
     }
 };
+
 
 // --- LOGIC ENGINE ---
 
