@@ -125,16 +125,22 @@
         }
         
         @media (max-width: 760px) {
+            * {
+                box-sizing: border-box;
+            }
             body {
                 height: auto;
+                overflow-x: hidden;
             }
             .main-layout {
                 flex-direction: column;
+                overflow-x: hidden;
             }
             .sidebar-leaderboard {
-                width: auto;
+                width: 100%;
                 box-shadow: none;
                 padding: 15px;
+                overflow-x: hidden;
             }
             .sidebar-leaderboard h2 {
                 font-size: 16px;
@@ -142,11 +148,20 @@
             .sidebar-leaderboard p {
                 font-size: 9px !important;
             }
+            table {
+                width: 100%;
+                table-layout: fixed;
+            }
             .groups-scroll-area {
                 padding: 15px;
+                overflow-x: hidden;
             }
             .groups-container {
                 grid-template-columns: 1fr;
+            }
+            .card {
+                width: 100%;
+                min-width: 0;
             }
             .card {
                 width: 100%;
@@ -208,6 +223,12 @@
             gap: 6px;
             white-space: nowrap;
             font-family: Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+            min-width: 0;
+        }
+        @media (max-width: 760px) {
+            .team-label {
+                gap: 3px;
+            }
         }
         .flag-icon { display: inline-block; width: 18px; font-size: 16px; line-height: 1; }
         .standings-row span { display: inline-flex; align-items: center; gap: 6px; }
