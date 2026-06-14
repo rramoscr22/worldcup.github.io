@@ -125,12 +125,32 @@ function getScoreLabel(match) {
     return 'TBD';
 }
 
+const knockoutStageOrder = [
+    'LAST_32',
+    'LAST_16',
+    'QUARTER_FINALS',
+    'SEMI_FINALS',
+    'THIRD_PLACE',
+    'FINAL'
+];
+
+const stageDisplayNames = {
+    LAST_32: 'Round of 32',
+    LAST_16: 'Round of 16',
+    QUARTER_FINALS: 'Quarter-finals',
+    SEMI_FINALS: 'Semi-finals',
+    THIRD_PLACE: 'Third Place',
+    FINAL: 'Final'
+};
+
+const scoreStages = new Set(['GROUP_STAGE', ...knockoutStageOrder]);
+
 function buildGroupData(matches) {
     const groups = {};
 
     matches.forEach(match => {
-        if (!match.group) return;
-        const groupKey = match.group;
+        const groupKey = match.stage === 'GROUP_STAGE' ? match.group : match.stage;
+        if (!groupKey) return;
         if (!groups[groupKey]) {
             groups[groupKey] = { fixtures: [], standings: [] };
         }
@@ -140,6 +160,7 @@ function buildGroupData(matches) {
         const fixture = {
             home,
             away,
+            stage: match.stage,
             score: getScoreLabel(match),
             time: formatMatchTime(match.utcDate),
             status: match.status || 'UNKNOWN',
@@ -149,7 +170,26 @@ function buildGroupData(matches) {
         groups[groupKey].fixtures.push(fixture);
     });
 
-    Object.keys(groups).sort().forEach(groupKey => {
+    Object.keys(groups).sort((a, b) => {
+        const aIsGroup = a.startsWith('GROUP_');
+        const bIsGroup = b.startsWith('GROUP_');
+
+        if (aIsGroup && bIsGroup) {
+            return a.localeCompare(b);
+        }
+        if (aIsGroup) return -1;
+        if (bIsGroup) return 1;
+
+        const aIndex = knockoutStageOrder.indexOf(a);
+        const bIndex = knockoutStageOrder.indexOf(b);
+
+        if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex;
+        }
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return a.localeCompare(b);
+    }).forEach(groupKey => {
         groups[groupKey].fixtures.sort((a, b) => a.time.localeCompare(b.time));
     });
 
@@ -157,7 +197,12 @@ function buildGroupData(matches) {
 }
 
 function calculateGroupStandings(groups) {
-    Object.values(groups).forEach(group => {
+    Object.entries(groups).forEach(([groupKey, group]) => {
+        if (!groupKey.startsWith('GROUP_')) {
+            group.standings = [];
+            return;
+        }
+
         const statsByTeam = {};
 
         group.fixtures.forEach(match => {
@@ -169,7 +214,7 @@ function calculateGroupStandings(groups) {
             if (!statsByTeam[away]) statsByTeam[away] = { pts: 0, gf: 0, ga: 0 };
 
             if (!match.isFinal) return;
-            const score = match.score.match(/^(\d+)\s*-\s*(\d+)$/);
+            const score = match.score.match(/^([0-9]+)\s*-\s*([0-9]+)$/);
             if (!score) return;
 
             const homeGoals = Number(score[1]);
@@ -210,6 +255,7 @@ function calculateParticipantScores(groups) {
     Object.values(groups).forEach(group => {
         group.fixtures.forEach(match => {
             if (!match.isFinal) return;
+            if (!scoreStages.has(match.stage)) return;
             const score = match.score.match(/^(\d+)\s*-\s*(\d+)$/);
             if (!score) return;
 
@@ -234,6 +280,29 @@ function calculateParticipantScores(groups) {
     });
 }
 
+function sortGroupKeys(keys) {
+    return keys.sort((a, b) => {
+        const aIsGroup = a.startsWith('GROUP_');
+        const bIsGroup = b.startsWith('GROUP_');
+
+        if (aIsGroup && bIsGroup) {
+            return a.localeCompare(b);
+        }
+        if (aIsGroup) return -1;
+        if (bIsGroup) return 1;
+
+        const aIndex = knockoutStageOrder.indexOf(a);
+        const bIndex = knockoutStageOrder.indexOf(b);
+
+        if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex;
+        }
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return a.localeCompare(b);
+    });
+}
+
 function renderLeaderboard() {
     const leaderboardBody = document.getElementById('leaderboard-body');
     leaderboardBody.innerHTML = participants.map((player, index) => `
@@ -250,10 +319,10 @@ function renderLeaderboard() {
 function renderGroups(groups) {
     const container = document.getElementById('dashboard-container');
     container.innerHTML = '';
-    const groupKeys = Object.keys(groups).sort();
+    const groupKeys = sortGroupKeys(Object.keys(groups));
 
     if (!groupKeys.length) {
-        container.innerHTML = '<p style="color: #f8fafc; padding: 20px;">No group stage data available.</p>';
+        container.innerHTML = '<p style="color: #f8fafc; padding: 20px;">No match data available.</p>';
         return;
     }
 
@@ -264,7 +333,7 @@ function renderGroups(groups) {
 
         const header = document.createElement('div');
         header.className = 'group-header';
-        header.innerText = groupKey.replace('GROUP_', 'Group ');
+        header.innerText = groupKey.startsWith('GROUP_') ? groupKey.replace('GROUP_', 'Group ') : (stageDisplayNames[groupKey] || groupKey);
         card.appendChild(header);
 
         const fixturesDiv = document.createElement('div');
@@ -282,19 +351,21 @@ function renderGroups(groups) {
         }).join('');
         card.appendChild(fixturesDiv);
 
-        const divider = document.createElement('div');
-        divider.className = 'divider';
-        card.appendChild(divider);
+        if (groupKey.startsWith('GROUP_')) {
+            const divider = document.createElement('div');
+            divider.className = 'divider';
+            card.appendChild(divider);
 
-        const standingsDiv = document.createElement('div');
-        standingsDiv.className = 'standings';
-        standingsDiv.innerHTML = `<div class="standings-title">Ranking</div>` + group.standings.map((entry, idx) => `
-            <div class="standings-row">
-                <span>${idx + 1}. <span class="team-label">${getTeamLabel(entry.team)}</span></span>
-                <span>${entry.pts} PTS | GD ${entry.gd >= 0 ? '+' + entry.gd : entry.gd}</span>
-            </div>
-        `).join('');
-        card.appendChild(standingsDiv);
+            const standingsDiv = document.createElement('div');
+            standingsDiv.className = 'standings';
+            standingsDiv.innerHTML = `<div class="standings-title">Ranking</div>` + group.standings.map((entry, idx) => `
+                <div class="standings-row">
+                    <span>${idx + 1}. <span class="team-label">${getTeamLabel(entry.team)}</span></span>
+                    <span>${entry.pts} PTS | GD ${entry.gd >= 0 ? '+' + entry.gd : entry.gd}</span>
+                </div>
+            `).join('');
+            card.appendChild(standingsDiv);
+        }
 
         container.appendChild(card);
     });
