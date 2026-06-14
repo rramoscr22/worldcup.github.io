@@ -62,7 +62,7 @@ const worldCupData = {
     "Group D": {
         "fixtures": [
             {"home": "USA", "away": "PAR", "score": "4 - 1", "time": "FINAL"},
-            {"home": "AUS", "away": "TUR", "score": "  -  ", "time": "TBD"},
+            {"home": "AUS", "away": "TUR", "score": "2 - 0", "time": "FINAL"},
             {"home": "USA", "away": "AUS", "score": "  -  ", "time": "TBD"},
             {"home": "PAR", "away": "TUR", "score": "  -  ", "time": "TBD"},
             {"home": "USA", "away": "TUR", "score": "  -  ", "time": "TBD"},
