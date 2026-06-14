@@ -2,7 +2,7 @@ name: Fetch Live World Cup Data
 
 on:
   schedule:
-    - cron: '0 * * * *' # Automatically runs every single hour
+    - cron: '*/5 * * * *' # Automatically runs every single hour
   workflow_dispatch: # Allows you to manually trigger it with a button click on GitHub
 
 jobs:
