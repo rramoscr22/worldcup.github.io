@@ -73,14 +73,46 @@ function formatMatchTime(utcDate) {
     if (!utcDate) return 'TBD';
     const date = new Date(utcDate);
     if (Number.isNaN(date.valueOf())) return utcDate;
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'UTC'
-    }).format(date) + ' UTC';
+
+    const etOffsetHours = getEasternOffsetHours(date);
+    const etDate = new Date(date.getTime() + etOffsetHours * 60 * 60 * 1000);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const month = monthNames[etDate.getUTCMonth()];
+    const day = etDate.getUTCDate();
+    const hour = padTwoDigits(etDate.getUTCHours());
+    const minute = padTwoDigits(etDate.getUTCMinutes());
+
+    return `${month} ${day}, ${hour}:${minute} ET`;
+}
+
+function getEasternOffsetHours(date) {
+    const year = date.getUTCFullYear();
+    const dstStart = getSecondSundayOfMarch(year);
+    const dstEnd = getFirstSundayOfNovember(year);
+
+    const utcDstStart = Date.UTC(year, 2, dstStart, 7, 0, 0); // 2:00 AM EST = 07:00 UTC
+    const utcDstEnd = Date.UTC(year, 10, dstEnd, 6, 0, 0); // 2:00 AM EDT = 06:00 UTC
+
+    const utcTime = date.getTime();
+    return utcTime >= utcDstStart && utcTime < utcDstEnd ? -4 : -5;
+}
+
+function getSecondSundayOfMarch(year) {
+    const marchFirst = new Date(Date.UTC(year, 2, 1));
+    const dayOfWeek = marchFirst.getUTCDay();
+    const firstSunday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+    return firstSunday + 7;
+}
+
+function getFirstSundayOfNovember(year) {
+    const novFirst = new Date(Date.UTC(year, 10, 1));
+    const dayOfWeek = novFirst.getUTCDay();
+    return dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+}
+
+function padTwoDigits(value) {
+    return String(value).padStart(2, '0');
 }
 
 function getScoreLabel(match) {
