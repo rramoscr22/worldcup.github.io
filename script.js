@@ -1,8 +1,8 @@
 // 1. Participant definition blocks
 const participants = [
     { name: "Aldo", teams: ["COL", "SUI", "RSA", "JOR"], losses: 0, draws: 0 },
-    { name: "Fredy", teams: ["NET", "NOR", "CAN", "KSA"], losses: 0, draws: 0 },
-    { name: "Bonilla", teams: ["GER", "CIV", "ALG", "CUR"], losses: 0, draws: 0 },
+    { name: "Fredy", teams: ["NED", "NOR", "CAN", "KSA"], losses: 0, draws: 0 },
+    { name: "Bonilla", teams: ["GER", "CIV", "ALG", "CUW"], losses: 0, draws: 0 },
     { name: "Hergi", teams: ["CRO", "USA", "AUT", "QAT"], losses: 0, draws: 0 },
     { name: "Mao", teams: ["FRA", "IRQ", "SCO", "ECU"], losses: 0, draws: 0 },
     { name: "George", teams: ["ARG", "MEX", "CZE", "IRN"], losses: 0, draws: 0 },
@@ -72,25 +72,25 @@ const worldCupData = {
     },
     "Group E": {
         "fixtures": [
-            {"home": "GER", "away": "CUR", "score": "  -  ", "time": "TBD"},
+            {"home": "GER", "away": "CUW", "score": "  -  ", "time": "TBD"},
             {"home": "CIV", "away": "ECU", "score": "  -  ", "time": "TBD"},
             {"home": "GER", "away": "CIV", "score": "  -  ", "time": "TBD"},
-            {"home": "CUR", "away": "ECU", "score": "  -  ", "time": "TBD"},
+            {"home": "CUW", "away": "ECU", "score": "  -  ", "time": "TBD"},
             {"home": "GER", "away": "ECU", "score": "  -  ", "time": "TBD"},
-            {"home": "CUR", "away": "CIV", "score": "  -  ", "time": "TBD"}
+            {"home": "CUW", "away": "CIV", "score": "  -  ", "time": "TBD"}
         ],
-        "standings": [ {"team": "GER"}, {"team": "CUR"}, {"team": "CIV"}, {"team": "ECU"} ]
+        "standings": [ {"team": "GER"}, {"team": "CUW"}, {"team": "CIV"}, {"team": "ECU"} ]
     },
     "Group F": {
         "fixtures": [
-            {"home": "NET", "away": "JPN", "score": "  -  ", "time": "TBD"},
+            {"home": "NED", "away": "JPN", "score": "  -  ", "time": "TBD"},
             {"home": "SWE", "away": "TUN", "score": "  -  ", "time": "TBD"},
-            {"home": "NET", "away": "SWE", "score": "  -  ", "time": "TBD"},
+            {"home": "NED", "away": "SWE", "score": "  -  ", "time": "TBD"},
             {"home": "JPN", "away": "TUN", "score": "  -  ", "time": "TBD"},
-            {"home": "NET", "away": "TUN", "score": "  -  ", "time": "TBD"},
+            {"home": "NED", "away": "TUN", "score": "  -  ", "time": "TBD"},
             {"home": "JPN", "away": "SWE", "score": "  -  ", "time": "TBD"}
         ],
-        "standings": [ {"team": "NET"}, {"team": "JPN"}, {"team": "SWE"}, {"team": "TUN"} ]
+        "standings": [ {"team": "NED"}, {"team": "JPN"}, {"team": "SWE"}, {"team": "TUN"} ]
     },
     "Group G": {
         "fixtures": [
@@ -171,7 +171,7 @@ const teamFlagMap = {
     COL: "🇨🇴",
     CRO: "🇭🇷",
     CZE: "🇨🇿",
-    CUR: "🇨🇼",
+    CUW: "🇨🇼",
     CPV: "🇨🇻",
     CDR: "🇨🇩",
     ECU: "🇪🇨",
@@ -189,7 +189,7 @@ const teamFlagMap = {
     KSA: "🇸🇦",
     MAR: "🇲🇦",
     MEX: "🇲🇽",
-    NET: "🇳🇱",
+    NED: "🇳🇱",
     NOR: "🇳🇴",
     NZL: "🇳🇿",
     PAN: "🇵🇦",
