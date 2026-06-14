@@ -113,6 +113,29 @@
             display: flex;
             flex-direction: column;
         }
+        
+        @media (max-width: 760px) {
+            body {
+                height: auto;
+            }
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar-leaderboard {
+                width: auto;
+                box-shadow: none;
+                padding: 15px;
+            }
+            .groups-scroll-area {
+                padding: 15px;
+            }
+            .groups-container {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                width: 100%;
+            }
+        }
         .group-header {
             background-color: #00f0ff;
             text-align: center;
