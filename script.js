@@ -1,17 +1,17 @@
 // Participants and team picks
 const participants = [
-    { name: "Aldo", teams: ["COL", "SUI", "RSA", "JOR"], losses: 0, draws: 0 },
-    { name: "Fredy", teams: ["NED", "NOR", "CAN", "KSA"], losses: 0, draws: 0 },
-    { name: "Bonilla", teams: ["GER", "CIV", "ALG", "CUW"], losses: 0, draws: 0 },
-    { name: "Hergi", teams: ["CRO", "USA", "AUT", "QAT"], losses: 0, draws: 0 },
-    { name: "Mao", teams: ["FRA", "IRQ", "SCO", "ECU"], losses: 0, draws: 0 },
-    { name: "George", teams: ["ARG", "MEX", "CZE", "IRN"], losses: 0, draws: 0 },
-    { name: "Juan", teams: ["BRA", "URY", "AUS", "BIH"], losses: 0, draws: 0 },
-    { name: "Vic", teams: ["ESP", "SWE", "PAR", "COD"], losses: 0, draws: 0 },
-    { name: "JP", teams: ["BEL", "JPN", "GHA", "HAI"], losses: 0, draws: 0 },
-    { name: "Richard", teams: ["ENG", "SEN", "TUN", "NZL"], losses: 0, draws: 0 },
-    { name: "Rodrigo", teams: ["MAR", "TUR", "PAN", "CPV"], losses: 0, draws: 0 },
-    { name: "David", teams: ["POR", "EGY", "KOR", "UZB"], losses: 0, draws: 0 }
+    { name: "Aldo", teams: ["COL", "SUI", "RSA", "JOR"], wins: 0, losses: 0, draws: 0 },
+    { name: "Fredy", teams: ["NED", "NOR", "CAN", "KSA"], wins: 0, losses: 0, draws: 0 },
+    { name: "Bonilla", teams: ["GER", "CIV", "ALG", "CUW"], wins: 0, losses: 0, draws: 0 },
+    { name: "Hergi", teams: ["CRO", "USA", "AUT", "QAT"], wins: 0, losses: 0, draws: 0 },
+    { name: "Mao", teams: ["FRA", "IRQ", "SCO", "ECU"], wins: 0, losses: 0, draws: 0 },
+    { name: "George", teams: ["ARG", "MEX", "CZE", "IRN"], wins: 0, losses: 0, draws: 0 },
+    { name: "Juan", teams: ["BRA", "URY", "AUS", "BIH"], wins: 0, losses: 0, draws: 0 },
+    { name: "Vic", teams: ["ESP", "SWE", "PAR", "COD"], wins: 0, losses: 0, draws: 0 },
+    { name: "JP", teams: ["BEL", "JPN", "GHA", "HAI"], wins: 0, losses: 0, draws: 0 },
+    { name: "Richard", teams: ["ENG", "SEN", "TUN", "NZL"], wins: 0, losses: 0, draws: 0 },
+    { name: "Rodrigo", teams: ["MAR", "TUR", "PAN", "CPV"], wins: 0, losses: 0, draws: 0 },
+    { name: "David", teams: ["POR", "EGY", "KOR", "UZB"], wins: 0, losses: 0, draws: 0 }
 ];
 
 const teamFlagMap = {
@@ -161,6 +161,7 @@ function buildGroupData(matches) {
             home,
             away,
             stage: match.stage,
+            utcDate: match.utcDate,
             score: getScoreLabel(match),
             time: formatMatchTime(match.utcDate),
             status: match.status || 'UNKNOWN',
@@ -248,6 +249,7 @@ function calculateGroupStandings(groups) {
 
 function calculateParticipantScores(groups) {
     participants.forEach(player => {
+        player.wins = 0;
         player.losses = 0;
         player.draws = 0;
     });
@@ -267,14 +269,18 @@ function calculateParticipantScores(groups) {
                 if (homeOwner) homeOwner.draws += 1;
                 if (awayOwner) awayOwner.draws += 1;
             } else {
+                const winningTeam = homeGoals > awayGoals ? match.home : match.away;
                 const losingTeam = homeGoals < awayGoals ? match.home : match.away;
-                const owner = participants.find(p => p.teams.includes(losingTeam));
-                if (owner) owner.losses += 1;
+                const winOwner = participants.find(p => p.teams.includes(winningTeam));
+                const lossOwner = participants.find(p => p.teams.includes(losingTeam));
+                if (winOwner) winOwner.wins += 1;
+                if (lossOwner) lossOwner.losses += 1;
             }
         });
     });
 
     participants.sort((a, b) => {
+        if (b.wins !== a.wins) return b.wins - a.wins;
         if (a.losses !== b.losses) return a.losses - b.losses;
         return a.draws - b.draws;
     });
@@ -303,6 +309,14 @@ function sortGroupKeys(keys) {
     });
 }
 
+function isMatchLive(utcDate) {
+    if (!utcDate) return false;
+    const matchStart = new Date(utcDate);
+    const matchEnd = new Date(matchStart.getTime() + 2 * 60 * 60 * 1000 + 15 * 60 * 1000); // 2:15 hours
+    const now = new Date();
+    return now >= matchStart && now < matchEnd;
+}
+
 function renderLeaderboard() {
     const leaderboardBody = document.getElementById('leaderboard-body');
     leaderboardBody.innerHTML = participants.map((player, index) => `
@@ -310,6 +324,7 @@ function renderLeaderboard() {
             <td><strong>#${index + 1}</strong></td>
             <td><strong>${player.name}</strong></td>
             <td class="teams-list" title="${player.teams.join(', ')}">${player.teams.join(', ')}</td>
+            <td><span class="badge win-badge">${player.wins}</span></td>
             <td><span class="badge loss-badge">${player.losses}</span></td>
             <td><span class="badge draw-badge">${player.draws}</span></td>
         </tr>
@@ -340,11 +355,12 @@ function renderGroups(groups) {
         fixturesDiv.className = 'fixtures';
         fixturesDiv.innerHTML = group.fixtures.map(f => {
             const isFinal = f.isFinal;
+            const isLive = isMatchLive(f.utcDate);
             return `
                 <div class="match-row">
                     <span class="match-time">${f.time}</span>
                     <span class="team"><span class="team-label">${getTeamLabel(f.home)}</span></span>
-                    <span class="score ${isFinal ? 'final' : ''}">${f.score}</span>
+                    <span class="score ${isFinal ? 'final' : ''}${isLive ? ' live' : ''}">${f.score}${isLive ? ' <span class="live-badge">LIVE</span>' : ''}</span>
                     <span class="team away"><span class="team-label">${getTeamLabel(f.away)}</span></span>
                 </div>
             `;
