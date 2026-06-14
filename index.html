@@ -65,6 +65,15 @@
             text-transform: uppercase;
             font-size: 10px;
         }
+        @media (max-width: 760px) {
+            th, td {
+                padding: 4px 3px;
+                font-size: 10px;
+            }
+            th {
+                font-size: 8px;
+            }
+        }
         tr {
             border-bottom: 1px solid #334155;
         }
@@ -127,6 +136,12 @@
                 box-shadow: none;
                 padding: 15px;
             }
+            .sidebar-leaderboard h2 {
+                font-size: 16px;
+            }
+            .sidebar-leaderboard p {
+                font-size: 9px !important;
+            }
             .groups-scroll-area {
                 padding: 15px;
             }
@@ -135,6 +150,10 @@
             }
             .card {
                 width: 100%;
+            }
+            .badge {
+                padding: 1px 4px;
+                font-size: 10px;
             }
         }
         .group-header {
@@ -146,6 +165,11 @@
             text-transform: uppercase;
         }
         .fixtures { padding: 10px; }
+        @media (max-width: 760px) {
+            .fixtures {
+                padding: 8px;
+            }
+        }
         .match-row {
             display: flex;
             align-items: center;
@@ -153,7 +177,20 @@
             margin-bottom: 8px;
             font-size: 12px;
         }
+        @media (max-width: 760px) {
+            .match-row {
+                gap: 4px;
+                margin-bottom: 6px;
+                font-size: 11px;
+            }
+        }
         .match-time { color: #64748b; font-size: 10px; width: 60px; flex-shrink: 0; }
+        @media (max-width: 760px) {
+            .match-time {
+                font-size: 9px;
+                width: 50px;
+            }
+        }
         .team {
             font-weight: bold;
             min-width: 0;
@@ -184,18 +221,33 @@
             width: 50px;
             text-align: center;
         }
+        @media (max-width: 760px) {
+            .score {
+                width: auto;
+                padding: 1px 3px;
+                font-size: 11px;
+            }
+        }
         .score.final { background-color: #f1f5f9; }
         .score.live { background-color: #fca5a5; border-color: #dc2626; }
         .live-badge {
             display: inline-block;
             background-color: #dc2626;
             color: white;
-            font-size: 8px;
+            font-size: 9px;
             font-weight: bold;
-            padding: 1px 3px;
+            padding: 2px 4px;
             border-radius: 2px;
-            margin-left: 2px;
+            margin-left: 3px;
             animation: pulse 1.5s infinite;
+            white-space: nowrap;
+        }
+        @media (max-width: 760px) {
+            .live-badge {
+                font-size: 8px;
+                padding: 1px 3px;
+                margin-left: 2px;
+            }
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
