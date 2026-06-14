@@ -6,7 +6,7 @@ const participants = [
     { name: "Hergi", teams: ["CRO", "USA", "AUT", "QAT"], losses: 0, draws: 0 },
     { name: "Mao", teams: ["FRA", "IRQ", "SCO", "ECU"], losses: 0, draws: 0 },
     { name: "George", teams: ["ARG", "MEX", "CZE", "IRN"], losses: 0, draws: 0 },
-    { name: "Juan", teams: ["BRA", "URU", "AUS", "BIH"], losses: 0, draws: 0 },
+    { name: "Juan", teams: ["BRA", "URY", "AUS", "BIH"], losses: 0, draws: 0 },
     { name: "Vic", teams: ["ESP", "SWE", "PAR", "COD"], losses: 0, draws: 0 },
     { name: "JP", teams: ["BEL", "JPN", "GHA", "HAI"], losses: 0, draws: 0 },
     { name: "Richard", teams: ["ENG", "SEN", "TUN", "NZL"], losses: 0, draws: 0 },
@@ -60,7 +60,7 @@ const teamFlagMap = {
     SWE: "🇸🇪",
     TUN: "🇹🇳",
     TUR: "🇹🇷",
-    URU: "🇺🇾",
+    URY: "🇺🇾",
     USA: "🇺🇸",
     UZB: "🇺🇿"
 };
