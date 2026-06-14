@@ -39,6 +39,7 @@ const teamFlagMap = {
     HAI: "🇭🇹",
     IRN: "🇮🇷",
     IRQ: "🇮🇶",
+    ALG: "🇩🇿",
     JPN: "🇯🇵",
     JOR: "🇯🇴",
     KOR: "🇰🇷",
