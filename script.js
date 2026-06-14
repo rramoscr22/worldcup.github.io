@@ -42,7 +42,7 @@ const worldCupData = {
     "Group C": {
         "fixtures": [
             {"home": "BRA", "away": "MAR", "score": "1 - 1", "time": "FINAL"}, // CAN & BIH both get +1 Draw
-            {"home": "HAI", "away": "SCO", "score": "  -  ", "time": "June 13"}, // QAT & SUI both get +1 Draw
+            {"home": "HAI", "away": "SCO", "score": "0 - 1", "time": "FINAL"}, // QAT & SUI both get +1 Draw
             {"home": "SUI", "away": "BIH", "score": "  -  ", "time": "June 18"}
         ],
         "standings": [
