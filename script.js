@@ -356,11 +356,12 @@ function renderGroups(groups) {
         fixturesDiv.innerHTML = group.fixtures.map(f => {
             const isFinal = f.isFinal;
             const isLive = isMatchLive(f.utcDate);
+            const liveHtml = isLive ? ' <span class="live-badge">LIVE</span>' : '';
             return `
                 <div class="match-row">
                     <span class="match-time">${f.time}</span>
                     <span class="team"><span class="team-label">${getTeamLabel(f.home)}</span></span>
-                    <span class="score ${isFinal ? 'final' : ''}${isLive ? ' live' : ''}">${f.score}${isLive ? ' <span class="live-badge">LIVE</span>' : ''}</span>
+                    <span class="score ${isFinal ? 'final' : ''}${isLive ? ' live' : ''}">${f.score}${liveHtml}</span>
                     <span class="team away"><span class="team-label">${getTeamLabel(f.away)}</span></span>
                 </div>
             `;
