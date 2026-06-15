@@ -327,7 +327,7 @@ function sortGroupKeys(keys) {
 }
 
 function isMatchLive(utcDate, status) {
-    //if (status === 'IN_PLAY' || status === 'LIVE') return true;
+    if (status === 'FINISHED') return false;
     if (!utcDate) return false;
     const matchStart = new Date(utcDate);
     const matchEnd = new Date(matchStart.getTime() + 2 * 60 * 60 * 1000 + 15 * 60 * 1000); // 2:15 hours
@@ -418,35 +418,49 @@ function showError(message) {
     container.innerHTML = `<p style="color: #f8fafc; padding: 20px;">${message}</p>`;
 }
 
+function renderDataSourceLegend(url) {
+    const container = document.getElementById('data-source-container');
+    if (!container) return;
+    
+    const isWorker = url.includes('workers.dev');
+    const sourceName = isWorker ? 'Live Update (Cloudflare)' : 'GitHub Registry (data.json)';
+    
+    container.innerHTML = `<p style="font-size: 10px; color: #22d3ee; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold;">Source: ${sourceName}</p>`;
+}
+
 async function loadDataJson() {
-    try {
-        const response = await fetch('https://worldcup-api.rramoscr.workers.dev/');
-        if (!response.ok) {
-            throw new Error(`Failed to fetch from API: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data.matches || [];
-    } catch (error) {
-        console.error('Cloudflare API failed, falling back to local data.json:', error);
+    const sources = [
+        'https://worldcup-api.rramoscr.workers.dev/',
+        'data.json'
+    ];
+
+    for (const url of sources) {
         try {
-            const response = await fetch('data.json');
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data.json: ${response.status} ${response.statusText}`);
-            }
+            // Add a cache-buster (?t=...) to bypass GitHub Pages/CDN caching
+            const cacheBuster = `?t=${new Date().getTime()}`;
+            const response = await fetch(url + cacheBuster);
+            
+            if (!response.ok) continue;
+
+            // The worker returns a string, not JSON. This check prevents a crash.
             const data = await response.json();
-            return data.matches || [];
-        } catch (fallbackError) {
-            console.error('Fallback to data.json failed:', fallbackError);
-            showError('Unable to fetch World Cup data from API or local file. Please try again later.');
-            return [];
+            if (data && data.matches) {
+                return { matches: data.matches, sourceUrl: url };
+            }
+        } catch (err) {
+            console.warn(`Failed to load data from ${url}, trying next...`);
         }
     }
+
+    showError('Unable to fetch World Cup data. Please check your connection or try again later.');
+    return { matches: [], sourceUrl: '' };
 }
 
 async function init() {
-    const matches = await loadDataJson();
+    const { matches, sourceUrl } = await loadDataJson();
     if (!matches.length) return;
 
+    renderDataSourceLegend(sourceUrl);
     const groups = buildGroupData(matches);
     calculateGroupStandings(groups);
     calculateParticipantScores(groups);
