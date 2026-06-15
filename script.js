@@ -335,6 +335,17 @@ function isMatchLive(utcDate, status) {
     return now >= matchStart && now < matchEnd;
 }
 
+function isMatchToday(utcDate) {
+    if (!utcDate) return false;
+    const matchDate = new Date(utcDate);
+    const today = new Date();
+    
+    // Compare dates: year, month, and day (ignoring time)
+    return matchDate.getUTCFullYear() === today.getUTCFullYear() &&
+           matchDate.getUTCMonth() === today.getUTCMonth() &&
+           matchDate.getUTCDate() === today.getUTCDate();
+}
+
 function renderLeaderboard() {
     const leaderboardBody = document.getElementById('leaderboard-body');
     leaderboardBody.innerHTML = participants.map((player, index) => `
@@ -381,9 +392,11 @@ function renderGroups(groups) {
         fixturesDiv.innerHTML = group.fixtures.map(f => {
             const isFinal = f.isFinal;
             const isLive = isMatchLive(f.utcDate, f.status);
+            const isToday = isMatchToday(f.utcDate);
             const liveHtml = isLive ? ' <span class="live-badge">LIVE</span>' : '';
+            const todayClass = isToday && !isFinal ? ' today-match' : '';
             return `
-                <div class="match-row">
+                <div class="match-row${todayClass}">
                     <span class="match-time">${f.time}</span>
                     <span class="team"><span class="team-label">${getTeamLabel(f.home)}</span></span>
                     <span class="score ${isFinal ? 'final' : ''}${isLive ? ' live' : ''}">${f.score}${liveHtml}</span>
