@@ -116,6 +116,27 @@ function padTwoDigits(value) {
     return String(value).padStart(2, '0');
 }
 
+const validMatchStatuses = new Set([
+    'SCHEDULED',
+    'TIMED',
+    'IN_PLAY',
+    'PAUSED',
+    'EXTRA_TIME',
+    'PENALTY_SHOOTOUT',
+    'FINISHED',
+    'SUSPENDED',
+    'POSTPONED',
+    'CANCELLED',
+    'AWARDED'
+]);
+
+const liveMatchStatuses = new Set([
+    'IN_PLAY',
+    'PAUSED',
+    'EXTRA_TIME',
+    'PENALTY_SHOOTOUT'
+]);
+
 function getScoreLabel(match) {
     // Extract scores, allowing for both numeric and string types from the API
     const fullTime = match.score?.fullTime;
@@ -129,7 +150,7 @@ function getScoreLabel(match) {
     }
     
     // Fallback for live matches that have no goals yet
-    if (match.status === 'IN_PLAY' || match.status === 'LIVE') return '0 - 0';
+    if (liveMatchStatuses.has(match.status)) return '0 - 0';
 
     return 'TBD';
 }
@@ -173,7 +194,7 @@ function buildGroupData(matches) {
             utcDate: match.utcDate,
             score: getScoreLabel(match),
             time: formatMatchTime(match.utcDate),
-            status: match.status || 'UNKNOWN',
+            status: validMatchStatuses.has(match.status) ? match.status : 'TIMED',
             isFinal: match.status === 'FINISHED'
         };
 
@@ -223,7 +244,7 @@ function calculateGroupStandings(groups) {
             if (!statsByTeam[home]) statsByTeam[home] = { pts: 0, gf: 0, ga: 0 };
             if (!statsByTeam[away]) statsByTeam[away] = { pts: 0, gf: 0, ga: 0 };
 
-            if (!match.isFinal && match.status !== 'IN_PLAY' && match.status !== 'LIVE') return;
+            if (!match.isFinal && !liveMatchStatuses.has(match.status)) return;
             const score = match.score.match(/^([0-9]+)\s*-\s*([0-9]+)$/);
             if (!score) return;
 
@@ -266,8 +287,8 @@ function calculateParticipantScores(groups) {
 
     Object.values(groups).forEach(group => {
         group.fixtures.forEach(match => {
-            // Include finished matches and live matches for real-time leaderboard/jackpot
-            if (!match.isFinal && match.status !== 'IN_PLAY' && match.status !== 'LIVE') return;
+            // Include finished matches and currently-live matches for real-time leaderboard/jackpot
+            if (!match.isFinal && !liveMatchStatuses.has(match.status)) return;
             if (!scoreStages.has(match.stage)) return;
 
             const score = match.score.match(/^(\d+)\s*-\s*(\d+)$/);
