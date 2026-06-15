@@ -411,9 +411,19 @@ async function loadDataJson() {
         const data = await response.json();
         return data.matches || [];
     } catch (error) {
-        console.error(error);
-        showError('Unable to fetch World Cup data from API. Please try again later.');
-        return [];
+        console.error('Cloudflare API failed, falling back to local data.json:', error);
+        try {
+            const response = await fetch('data.json');
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data.json: ${response.status} ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data.matches || [];
+        } catch (fallbackError) {
+            console.error('Fallback to data.json failed:', fallbackError);
+            showError('Unable to fetch World Cup data from API or local file. Please try again later.');
+            return [];
+        }
     }
 }
 
