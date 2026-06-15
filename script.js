@@ -338,6 +338,13 @@ function renderLeaderboard() {
             <td><span class="badge draw-badge">${player.draws}</span></td>
         </tr>
     `).join('');
+
+    // Calculate Jackpot: sum of all participants' losses and draws
+    const totalPot = participants.reduce((total, player) => total + (player.losses || 0) + (player.draws || 0), 0);
+    const jackpotElement = document.getElementById('jackpot-amount');
+    if (jackpotElement) {
+        jackpotElement.innerText = `$${totalPot}`;
+    }
 }
 
 function renderGroups(groups) {
