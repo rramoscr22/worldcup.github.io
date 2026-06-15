@@ -223,7 +223,7 @@ function calculateGroupStandings(groups) {
             if (!statsByTeam[home]) statsByTeam[home] = { pts: 0, gf: 0, ga: 0 };
             if (!statsByTeam[away]) statsByTeam[away] = { pts: 0, gf: 0, ga: 0 };
 
-            if (!match.isFinal) return;
+            if (!match.isFinal && match.status !== 'IN_PLAY' && match.status !== 'LIVE') return;
             const score = match.score.match(/^([0-9]+)\s*-\s*([0-9]+)$/);
             if (!score) return;
 
@@ -265,7 +265,7 @@ function calculateParticipantScores(groups) {
 
     Object.values(groups).forEach(group => {
         group.fixtures.forEach(match => {
-            if (!match.isFinal) return;
+            if (!match.isFinal && match.status !== 'IN_PLAY' && match.status !== 'LIVE') return;
             if (!scoreStages.has(match.stage)) return;
             const score = match.score.match(/^(\d+)\s*-\s*(\d+)$/);
             if (!score) return;
@@ -318,7 +318,8 @@ function sortGroupKeys(keys) {
     });
 }
 
-function isMatchLive(utcDate) {
+function isMatchLive(utcDate, status) {
+    if (status === 'IN_PLAY' || status === 'LIVE') return true;
     if (!utcDate) return false;
     const matchStart = new Date(utcDate);
     const matchEnd = new Date(matchStart.getTime() + 2 * 60 * 60 * 1000 + 15 * 60 * 1000); // 2:15 hours
@@ -371,7 +372,7 @@ function renderGroups(groups) {
         fixturesDiv.className = 'fixtures';
         fixturesDiv.innerHTML = group.fixtures.map(f => {
             const isFinal = f.isFinal;
-            const isLive = isMatchLive(f.utcDate);
+            const isLive = isMatchLive(f.utcDate, f.status);
             const liveHtml = isLive ? ' <span class="live-badge">LIVE</span>' : '';
             return `
                 <div class="match-row">
