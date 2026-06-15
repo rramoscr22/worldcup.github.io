@@ -117,14 +117,14 @@ function padTwoDigits(value) {
 }
 
 function getScoreLabel(match) {
-    // Try fullTime first, then regularTime (important for matches currently IN_PLAY)
-    let home = match.score?.fullTime?.home;
-    let away = match.score?.fullTime?.away;
+    // Extract scores, allowing for both numeric and string types from the API
+    const fullTime = match.score?.fullTime;
+    const regularTime = match.score?.regularTime;
 
-    if (home === null || home === undefined) home = match.score?.regularTime?.home;
-    if (away === null || away === undefined) away = match.score?.regularTime?.away;
+    const home = fullTime?.home ?? regularTime?.home;
+    const away = fullTime?.away ?? regularTime?.away;
 
-    if (typeof home === 'number' && typeof away === 'number') {
+    if (home !== null && home !== undefined && away !== null && away !== undefined) {
         return `${home} - ${away}`;
     }
     
@@ -257,6 +257,7 @@ function calculateGroupStandings(groups) {
 }
 
 function calculateParticipantScores(groups) {
+    // Reset all participant stats before recalculating
     participants.forEach(player => {
         player.wins = 0;
         player.losses = 0;
@@ -265,23 +266,30 @@ function calculateParticipantScores(groups) {
 
     Object.values(groups).forEach(group => {
         group.fixtures.forEach(match => {
+            // Include finished matches and live matches for real-time leaderboard/jackpot
             if (!match.isFinal && match.status !== 'IN_PLAY' && match.status !== 'LIVE') return;
             if (!scoreStages.has(match.stage)) return;
+
             const score = match.score.match(/^(\d+)\s*-\s*(\d+)$/);
             if (!score) return;
 
             const homeGoals = Number(score[1]);
             const awayGoals = Number(score[2]);
+            const homeTla = match.home.trim();
+            const awayTla = match.away.trim();
+
             if (homeGoals === awayGoals) {
-                const homeOwner = participants.find(p => p.teams.includes(match.home));
-                const awayOwner = participants.find(p => p.teams.includes(match.away));
+                const homeOwner = participants.find(p => p.teams.includes(homeTla));
+                const awayOwner = participants.find(p => p.teams.includes(awayTla));
                 if (homeOwner) homeOwner.draws += 1;
                 if (awayOwner) awayOwner.draws += 1;
             } else {
-                const winningTeam = homeGoals > awayGoals ? match.home : match.away;
-                const losingTeam = homeGoals < awayGoals ? match.home : match.away;
-                const winOwner = participants.find(p => p.teams.includes(winningTeam));
-                const lossOwner = participants.find(p => p.teams.includes(losingTeam));
+                const winningTla = homeGoals > awayGoals ? homeTla : awayTla;
+                const losingTla = homeGoals < awayGoals ? homeTla : awayTla;
+                
+                const winOwner = participants.find(p => p.teams.includes(winningTla));
+                const lossOwner = participants.find(p => p.teams.includes(losingTla));
+
                 if (winOwner) winOwner.wins += 1;
                 if (lossOwner) lossOwner.losses += 1;
             }
@@ -319,7 +327,7 @@ function sortGroupKeys(keys) {
 }
 
 function isMatchLive(utcDate, status) {
-    if (status === 'IN_PLAY' || status === 'LIVE') return true;
+    //if (status === 'IN_PLAY' || status === 'LIVE') return true;
     if (!utcDate) return false;
     const matchStart = new Date(utcDate);
     const matchEnd = new Date(matchStart.getTime() + 2 * 60 * 60 * 1000 + 15 * 60 * 1000); // 2:15 hours
