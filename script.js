@@ -339,11 +339,15 @@ function isMatchToday(utcDate) {
     if (!utcDate) return false;
     const matchDate = new Date(utcDate);
     const today = new Date();
-    
-    // Compare dates: year, month, and day (ignoring time)
-    return matchDate.getUTCFullYear() === today.getUTCFullYear() &&
-           matchDate.getUTCMonth() === today.getUTCMonth() &&
-           matchDate.getUTCDate() === today.getUTCDate();
+
+    // Convert both to Eastern Time before comparing dates
+    const etOffset = getEasternOffsetHours(matchDate) * 60 * 60 * 1000;
+    const matchET = new Date(matchDate.getTime() + etOffset);
+    const todayET = new Date(today.getTime() + getEasternOffsetHours(today) * 60 * 60 * 1000);
+
+    return matchET.getUTCFullYear() === todayET.getUTCFullYear() &&
+           matchET.getUTCMonth() === todayET.getUTCMonth() &&
+           matchET.getUTCDate() === todayET.getUTCDate();
 }
 
 function renderLeaderboard() {
@@ -364,6 +368,91 @@ function renderLeaderboard() {
     const jackpotElement = document.getElementById('jackpot-amount');
     if (jackpotElement) {
         jackpotElement.innerText = `$${totalPot}`;
+    }
+}
+
+function renderGroupsByDate(groups) {
+    const container = document.getElementById('dashboard-container');
+    container.innerHTML = '';
+    
+    // Collect all fixtures and sort by date
+    const allFixtures = [];
+    Object.entries(groups).forEach(([groupKey, group]) => {
+        group.fixtures.forEach(f => {
+            allFixtures.push({ ...f, groupKey });
+        });
+    });
+    
+    allFixtures.sort((a, b) => {
+        const dateA = new Date(a.utcDate || '9999-12-31');
+        const dateB = new Date(b.utcDate || '9999-12-31');
+        return dateA - dateB;
+    });
+    
+    if (!allFixtures.length) {
+        container.innerHTML = '<p style="color: #f8fafc; padding: 20px;">No match data available.</p>';
+        return;
+    }
+    
+    // Group by date
+    const dateGroups = {};
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    allFixtures.forEach(f => {
+        const date = new Date(f.utcDate);
+        const etOffset = getEasternOffsetHours(date) * 60 * 60 * 1000;
+        const etDate = new Date(date.getTime() + etOffset);
+        const dateKey = `${monthNames[etDate.getUTCMonth()]} ${etDate.getUTCDate()}, ${etDate.getUTCFullYear()}`;
+        if (!dateGroups[dateKey]) dateGroups[dateKey] = [];
+        dateGroups[dateKey].push(f);
+    });
+    
+    // Get today's date key in ET for scrolling
+    const now = new Date();
+    const todayEtOffset = getEasternOffsetHours(now) * 60 * 60 * 1000;
+    const todayET = new Date(now.getTime() + todayEtOffset);
+    const todayKey = `${monthNames[todayET.getUTCMonth()]} ${todayET.getUTCDate()}, ${todayET.getUTCFullYear()}`;
+    
+    // Render cards by date
+    Object.entries(dateGroups).forEach(([dateKey, fixtures]) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        if (dateKey === todayKey) {
+            card.id = 'today-date-card';
+        }
+        
+        const header = document.createElement('div');
+        header.className = 'group-header';
+        header.innerText = dateKey;
+        card.appendChild(header);
+        
+        const fixturesDiv = document.createElement('div');
+        fixturesDiv.className = 'fixtures';
+        fixturesDiv.innerHTML = fixtures.map(f => {
+            const isFinal = f.isFinal;
+            const isLive = isMatchLive(f.utcDate, f.status);
+            const isToday = isMatchToday(f.utcDate);
+            const liveHtml = isLive ? ' <span class="live-badge">LIVE</span>' : '';
+            const todayClass = isToday && !isFinal ? ' today-match' : '';
+            return `
+                <div class="match-row${todayClass}">
+                    <span class="match-time">${f.time}</span>
+                    <span class="team"><span class="team-label">${getTeamLabel(f.home)}</span></span>
+                    <span class="score ${isFinal ? 'final' : ''}${isLive ? ' live' : ''}">${f.score}${liveHtml}</span>
+                    <span class="team away"><span class="team-label">${getTeamLabel(f.away)}</span></span>
+                </div>
+            `;
+        }).join('');
+        card.appendChild(fixturesDiv);
+        
+        container.appendChild(card);
+    });
+    
+    // Scroll to today's date card if it exists
+    const todayCard = document.getElementById('today-date-card');
+    if (todayCard) {
+        setTimeout(() => {
+            todayCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
     }
 }
 
@@ -469,6 +558,27 @@ async function loadDataJson() {
     return { matches: [], sourceUrl: '' };
 }
 
+function setupTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    let currentGroups = null;
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            
+            const tab = button.getAttribute('data-tab');
+            if (tab === 'grouped') {
+                renderGroups(currentGroups);
+            } else if (tab === 'bydate') {
+                renderGroupsByDate(currentGroups);
+            }
+        });
+    });
+    
+    return (groups) => { currentGroups = groups; };
+}
+
 async function init() {
     const { matches, sourceUrl } = await loadDataJson();
     if (!matches.length) return;
@@ -478,7 +588,10 @@ async function init() {
     calculateGroupStandings(groups);
     calculateParticipantScores(groups);
     renderLeaderboard();
-    renderGroups(groups);
+    
+    const setCurrentGroups = setupTabs();
+    setCurrentGroups(groups);
+    renderGroupsByDate(groups);
 }
 
 document.addEventListener('DOMContentLoaded', init);
