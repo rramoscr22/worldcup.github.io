@@ -95,7 +95,7 @@
         .teams-list {
             font-size: 11px;
             color: #94a3b8;
-            max-width: 110px;
+            max-width: 160px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -150,7 +150,6 @@
             }
             table {
                 width: 100%;
-                table-layout: fixed;
             }
             .groups-scroll-area {
                 padding: 15px;
@@ -168,6 +167,22 @@
             }
             .badge {
                 padding: 1px 4px;
+                font-size: 10px;
+            }
+            /* Minimize columns for Rank, W, L, D and allow Teams list to expand */
+            th:nth-child(4), td:nth-child(4),
+            th:nth-child(5), td:nth-child(5),
+            th:nth-child(6), td:nth-child(6) {
+                width: 25px;
+                text-align: center;
+                padding: 4px 1px;
+            }
+            th:nth-child(1), td:nth-child(1) {
+                width: 35px;
+            }
+            .teams-list {
+                max-width: none;
+                white-space: normal;
                 font-size: 10px;
             }
         }

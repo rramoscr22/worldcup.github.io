@@ -117,11 +117,20 @@ function padTwoDigits(value) {
 }
 
 function getScoreLabel(match) {
-    const home = match.score?.fullTime?.home;
-    const away = match.score?.fullTime?.away;
+    // Try fullTime first, then regularTime (important for matches currently IN_PLAY)
+    let home = match.score?.fullTime?.home;
+    let away = match.score?.fullTime?.away;
+
+    if (home === null || home === undefined) home = match.score?.regularTime?.home;
+    if (away === null || away === undefined) away = match.score?.regularTime?.away;
+
     if (typeof home === 'number' && typeof away === 'number') {
         return `${home} - ${away}`;
     }
+    
+    // Fallback for live matches that have no goals yet
+    if (match.status === 'IN_PLAY' || match.status === 'LIVE') return '0 - 0';
+
     return 'TBD';
 }
 
