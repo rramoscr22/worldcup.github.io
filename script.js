@@ -404,15 +404,15 @@ function showError(message) {
 
 async function loadDataJson() {
     try {
-        const response = await fetch('data.json');
+        const response = await fetch('https://worldcup-api.rramoscr.workers.dev/');
         if (!response.ok) {
-            throw new Error(`Failed to fetch data.json: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch from API: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
         return data.matches || [];
     } catch (error) {
         console.error(error);
-        showError('Unable to read data.json. Please run this page from a local server or upload data.json to the same folder.');
+        showError('Unable to fetch World Cup data from API. Please try again later.');
         return [];
     }
 }
