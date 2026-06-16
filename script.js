@@ -165,6 +165,7 @@ const knockoutStageOrder = [
 ];
 
 const stageDisplayNames = {
+    GROUP_STAGE: 'Group Stage',
     LAST_32: 'Round of 32',
     LAST_16: 'Round of 16',
     QUARTER_FINALS: 'Quarter-finals',
@@ -221,7 +222,11 @@ function buildGroupData(matches) {
         if (bIndex !== -1) return 1;
         return a.localeCompare(b);
     }).forEach(groupKey => {
-        groups[groupKey].fixtures.sort((a, b) => a.time.localeCompare(b.time));
+        groups[groupKey].fixtures.sort((a, b) => {
+            const dateA = new Date(a.utcDate || '9999-12-31').getTime();
+            const dateB = new Date(b.utcDate || '9999-12-31').getTime();
+            return dateA - dateB;
+        });
     });
 
     return groups;
@@ -321,6 +326,138 @@ function calculateParticipantScores(groups) {
         if (b.wins !== a.wins) return b.wins - a.wins;
         if (a.losses !== b.losses) return a.losses - b.losses;
         return a.draws - b.draws;
+    });
+}
+
+function projectLast32FromStandings(groups) {
+    const last32 = groups.LAST_32;
+    if (!last32 || !Array.isArray(last32.fixtures) || !last32.fixtures.length) return;
+
+    const hasSeededTeams = last32.fixtures.some(fixture => {
+        const home = typeof fixture.home === 'string' ? fixture.home.trim() : fixture.home;
+        const away = typeof fixture.away === 'string' ? fixture.away.trim() : fixture.away;
+        return Boolean(home) || Boolean(away);
+    });
+
+    // Respect API-provided bracket assignments; only project when LAST_32 teams are empty.
+    if (hasSeededTeams) return;
+
+    const groupLetters = 'ABCDEFGHIJKL'.split('');
+    const winners = {};
+    const runnersUp = {};
+    const thirdPlaceRows = [];
+
+    groupLetters.forEach(letter => {
+        const standings = groups[`GROUP_${letter}`]?.standings || [];
+        if (standings[0]) winners[letter] = standings[0].team;
+        if (standings[1]) runnersUp[letter] = standings[1].team;
+        if (standings[2]) {
+            thirdPlaceRows.push({
+                group: letter,
+                ...standings[2]
+            });
+        }
+    });
+
+    const rankedThirds = [...thirdPlaceRows].sort((a, b) =>
+        b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team)
+    );
+
+    const qualifiedThirdGroupSet = new Set(rankedThirds.slice(0, 8).map(row => row.group));
+    const thirdRankIndex = rankedThirds.reduce((acc, row, index) => {
+        acc[row.group] = index;
+        return acc;
+    }, {});
+
+    const matchups = [
+        { home: { type: 'R', group: 'A' }, away: { type: 'R', group: 'B' } },
+        { home: { type: 'W', group: 'C' }, away: { type: 'R', group: 'F' } },
+        { home: { type: 'W', group: 'E' }, away: { type: 'T', groups: ['A', 'B', 'C', 'D', 'F'] } },
+        { home: { type: 'W', group: 'F' }, away: { type: 'R', group: 'C' } },
+        { home: { type: 'R', group: 'E' }, away: { type: 'R', group: 'I' } },
+        { home: { type: 'W', group: 'I' }, away: { type: 'T', groups: ['C', 'D', 'F', 'G', 'H'] } },
+        { home: { type: 'W', group: 'A' }, away: { type: 'T', groups: ['C', 'E', 'F', 'H', 'I'] } },
+        { home: { type: 'W', group: 'L' }, away: { type: 'T', groups: ['E', 'H', 'I', 'J', 'K'] } },
+        { home: { type: 'W', group: 'G' }, away: { type: 'T', groups: ['A', 'E', 'H', 'I', 'J'] } },
+        { home: { type: 'W', group: 'D' }, away: { type: 'T', groups: ['B', 'E', 'F', 'I', 'J'] } },
+        { home: { type: 'W', group: 'H' }, away: { type: 'R', group: 'J' } },
+        { home: { type: 'R', group: 'K' }, away: { type: 'R', group: 'L' } },
+        { home: { type: 'W', group: 'B' }, away: { type: 'T', groups: ['E', 'F', 'G', 'I', 'J'] } },
+        { home: { type: 'R', group: 'D' }, away: { type: 'R', group: 'G' } },
+        { home: { type: 'W', group: 'J' }, away: { type: 'R', group: 'H' } },
+        { home: { type: 'W', group: 'K' }, away: { type: 'T', groups: ['D', 'E', 'I', 'J', 'L'] } }
+    ];
+
+    function getFixedTeam(slot) {
+        if (slot.type === 'W') return winners[slot.group] || '';
+        if (slot.type === 'R') return runnersUp[slot.group] || '';
+        return '';
+    }
+
+    const thirdAssignments = matchups
+        .map((pairing, matchIndex) => [
+            { matchIndex, side: 'home', groups: pairing.home.type === 'T' ? pairing.home.groups : null },
+            { matchIndex, side: 'away', groups: pairing.away.type === 'T' ? pairing.away.groups : null }
+        ])
+        .flat()
+        .filter(entry => Array.isArray(entry.groups))
+        .map(entry => ({
+            ...entry,
+            candidates: entry.groups
+                .filter(group => qualifiedThirdGroupSet.has(group))
+                .sort((a, b) => (thirdRankIndex[a] ?? 999) - (thirdRankIndex[b] ?? 999))
+        }));
+
+    const thirdTeamByMatch = Array.from({ length: matchups.length }, () => ({ home: '', away: '' }));
+    const usedThirdGroups = new Set();
+
+    // Solve all third-place slots together to avoid duplicates and dead ends.
+    thirdAssignments.sort((a, b) => a.candidates.length - b.candidates.length);
+
+    function assignThirdTeams(index) {
+        if (index >= thirdAssignments.length) return true;
+
+        const target = thirdAssignments[index];
+        for (const group of target.candidates) {
+            if (usedThirdGroups.has(group)) continue;
+
+            const thirdTeam = groups[`GROUP_${group}`]?.standings?.[2]?.team;
+            if (!thirdTeam) continue;
+
+            usedThirdGroups.add(group);
+            thirdTeamByMatch[target.matchIndex][target.side] = thirdTeam;
+
+            if (assignThirdTeams(index + 1)) return true;
+
+            usedThirdGroups.delete(group);
+            thirdTeamByMatch[target.matchIndex][target.side] = '';
+        }
+
+        return false;
+    }
+
+    const hasValidThirdMapping = assignThirdTeams(0);
+
+    const fixtures = [...last32.fixtures].sort((a, b) => {
+        const dateA = new Date(a.utcDate || '9999-12-31').getTime();
+        const dateB = new Date(b.utcDate || '9999-12-31').getTime();
+        return dateA - dateB;
+    });
+
+    fixtures.forEach((fixture, index) => {
+        const pairing = matchups[index];
+        if (!pairing) return;
+
+        const homeTeam = pairing.home.type === 'T'
+            ? (hasValidThirdMapping ? thirdTeamByMatch[index].home : '')
+            : getFixedTeam(pairing.home);
+
+        const awayTeam = pairing.away.type === 'T'
+            ? (hasValidThirdMapping ? thirdTeamByMatch[index].away : '')
+            : getFixedTeam(pairing.away);
+
+        if (homeTeam) fixture.home = homeTeam;
+        if (awayTeam) fixture.away = awayTeam;
     });
 }
 
@@ -440,10 +577,23 @@ function renderGroupsByDate(groups) {
         if (dateKey === todayKey) {
             card.id = 'today-date-card';
         }
+
+        const stageOrderByDate = ['GROUP_STAGE', ...knockoutStageOrder];
+        const stageLabels = [...new Set(fixtures.map(f => f.stage))]
+            .sort((a, b) => {
+                const ai = stageOrderByDate.indexOf(a);
+                const bi = stageOrderByDate.indexOf(b);
+                if (ai !== -1 && bi !== -1) return ai - bi;
+                if (ai !== -1) return -1;
+                if (bi !== -1) return 1;
+                return String(a).localeCompare(String(b));
+            })
+            .map(stage => stageDisplayNames[stage] || String(stage || '').replace(/_/g, ' '));
+        const phaseText = stageLabels.join(' / ');
         
         const header = document.createElement('div');
         header.className = 'group-header';
-        header.innerText = dateKey;
+        header.innerText = phaseText ? `${dateKey} - ${phaseText}` : dateKey;
         card.appendChild(header);
         
         const fixturesDiv = document.createElement('div');
@@ -607,6 +757,7 @@ async function init() {
     renderDataSourceLegend(sourceUrl);
     const groups = buildGroupData(matches);
     calculateGroupStandings(groups);
+    projectLast32FromStandings(groups);
     calculateParticipantScores(groups);
     renderLeaderboard();
     
