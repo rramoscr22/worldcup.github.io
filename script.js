@@ -333,15 +333,6 @@ function projectLast32FromStandings(groups) {
     const last32 = groups.LAST_32;
     if (!last32 || !Array.isArray(last32.fixtures) || !last32.fixtures.length) return;
 
-    const hasSeededTeams = last32.fixtures.some(fixture => {
-        const home = typeof fixture.home === 'string' ? fixture.home.trim() : fixture.home;
-        const away = typeof fixture.away === 'string' ? fixture.away.trim() : fixture.away;
-        return Boolean(home) || Boolean(away);
-    });
-
-    // Respect API-provided bracket assignments; only project when LAST_32 teams are empty.
-    if (hasSeededTeams) return;
-
     const groupLetters = 'ABCDEFGHIJKL'.split('');
     const winners = {};
     const runnersUp = {};
@@ -456,8 +447,11 @@ function projectLast32FromStandings(groups) {
             ? (hasValidThirdMapping ? thirdTeamByMatch[index].away : '')
             : getFixedTeam(pairing.away);
 
-        if (homeTeam) fixture.home = homeTeam;
-        if (awayTeam) fixture.away = awayTeam;
+        const existingHome = typeof fixture.home === 'string' ? fixture.home.trim() : fixture.home;
+        const existingAway = typeof fixture.away === 'string' ? fixture.away.trim() : fixture.away;
+
+        if (!existingHome && homeTeam) fixture.home = homeTeam;
+        if (!existingAway && awayTeam) fixture.away = awayTeam;
     });
 }
 
