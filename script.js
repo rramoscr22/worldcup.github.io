@@ -60,9 +60,18 @@ const teamFlagMap = {
     SWE: "🇸🇪",
     TUN: "🇹🇳",
     TUR: "🇹🇷",
+    URU: "🇺🇾",
     URY: "🇺🇾",
     USA: "🇺🇸",
     UZB: "🇺🇿"
+};
+
+const worldRanking = {
+    ARG: 1, ESP: 2, FRA: 3, ENG: 4, POR: 5, BRA: 6, MAR: 7, NED: 8, BEL: 9, GER: 10,
+    CRO: 11, ITA: 12, COL: 13, MEX: 14, SEN: 15, URY: 16, URU: 16, USA: 17, JPN: 18, SUI: 19, IRN: 20,
+    DEN: 21, TUR: 22, ECU: 23, AUT: 24, KOR: 25, AUS: 26, ALG: 27, EGY: 28, CAN: 29,
+    NOR: 31, CIV: 32, PAN: 33, SWE: 34, CZE: 35, PAR: 36, SCO: 37, TUN: 38, COD: 39, UZB: 40,
+    QAT: 41, IRQ: 42, RSA: 43, KSA: 44, JOR: 45, BIH: 46, CPV: 47, GHA: 48
 };
 
 function getTeamLabel(teamCode) {
@@ -186,8 +195,10 @@ function buildGroupData(matches) {
             groups[groupKey] = { fixtures: [], standings: [] };
         }
 
-        const home = match.homeTeam?.tla || '';
-        const away = match.awayTeam?.tla || '';
+        // Normalize team codes (e.g., API sometimes uses URU instead of URY)
+        const home = match.homeTeam?.tla === 'URU' ? 'URY' : (match.homeTeam?.tla || '');
+        const away = match.awayTeam?.tla === 'URU' ? 'URY' : (match.awayTeam?.tla || '');
+
         const fixture = {
             home,
             away,
@@ -270,15 +281,66 @@ function calculateGroupStandings(groups) {
             }
         });
 
-        group.standings = Object.entries(statsByTeam)
-            .map(([team, stats]) => ({
-                team,
-                pts: stats.pts,
-                gf: stats.gf,
-                ga: stats.ga,
-                gd: stats.gf - stats.ga
-            }))
-            .sort((a, b) => b.pts - a.pts || b.gd - a.gd || a.team.localeCompare(b.team));
+        const standings = Object.entries(statsByTeam).map(([team, stats]) => ({
+            team,
+            pts: stats.pts,
+            gf: stats.gf,
+            ga: stats.ga,
+            gd: stats.gf - stats.ga
+        }));
+
+        standings.sort((a, b) => {
+            // Primary: Points (All matches)
+            if (b.pts !== a.pts) return b.pts - a.pts;
+
+            // Step 1: Head-to-Head among tied teams
+            const tiedTeams = standings.filter(t => t.pts === a.pts).map(t => t.team);
+            if (tiedTeams.length > 1) {
+                const miniA = { pts: 0, gf: 0, ga: 0 };
+                const miniB = { pts: 0, gf: 0, ga: 0 };
+
+                group.fixtures.forEach(m => {
+                    if (!m.isFinal && !liveMatchStatuses.has(m.status)) return;
+                    if (tiedTeams.includes(m.home) && tiedTeams.includes(m.away)) {
+                        const s = m.score.match(/^(\d+)\s*-\s*(\d+)$/);
+                        if (!s) return;
+                        const hg = Number(s[1]), ag = Number(s[2]);
+
+                        if (m.home === a.team) {
+                            miniA.gf += hg; miniA.ga += ag;
+                            if (hg > ag) miniA.pts += 3; else if (hg === ag) miniA.pts += 1;
+                        } else if (m.away === a.team) {
+                            miniA.gf += ag; miniA.ga += hg;
+                            if (ag > hg) miniA.pts += 3; else if (hg === ag) miniA.pts += 1;
+                        }
+                        if (m.home === b.team) {
+                            miniB.gf += hg; miniB.ga += ag;
+                            if (hg > ag) miniB.pts += 3; else if (hg === ag) miniB.pts += 1;
+                        } else if (m.away === b.team) {
+                            miniB.gf += ag; miniB.ga += hg;
+                            if (ag > hg) miniB.pts += 3; else if (hg === ag) miniB.pts += 1;
+                        }
+                    }
+                });
+
+                if (miniB.pts !== miniA.pts) return miniB.pts - miniA.pts;
+                if ((miniB.gf - miniB.ga) !== (miniA.gf - miniA.ga)) return (miniB.gf - miniB.ga) - (miniA.gf - miniA.ga);
+                if (miniB.gf !== miniA.gf) return miniB.gf - miniA.gf;
+            }
+
+            // Step 2: Overall Goal Difference and Goals Scored
+            if (b.gd !== a.gd) return b.gd - a.gd;
+            if (b.gf !== a.gf) return b.gf - a.gf;
+
+            // Final fallback: World Ranking
+            const rankA = worldRanking[a.team] || 999;
+            const rankB = worldRanking[b.team] || 999;
+            if (rankA !== rankB) return rankA - rankB;
+
+            return a.team.localeCompare(b.team);
+        });
+
+        group.standings = standings;
     });
 }
 
