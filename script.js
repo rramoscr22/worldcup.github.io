@@ -185,6 +185,109 @@ const stageDisplayNames = {
 
 const scoreStages = new Set(['GROUP_STAGE', ...knockoutStageOrder]);
 
+function getParticipantForTeam(teamCode) {
+    return participants.find(player => player.teams.includes(teamCode)) || null;
+}
+
+function launchFireworks(container) {
+    const fireworksLayer = container.querySelector('.winner-fireworks');
+    if (!fireworksLayer) return;
+
+    fireworksLayer.innerHTML = '';
+    const colors = ['#f59e0b', '#ef4444', '#22c55e', '#38bdf8', '#f472b6', '#facc15'];
+
+    for (let i = 0; i < 18; i += 1) {
+        const spark = document.createElement('span');
+        spark.className = 'firework';
+        spark.style.left = `${45 + (Math.random() * 10 - 5)}%`;
+        spark.style.top = `${35 + (Math.random() * 20 - 10)}%`;
+        spark.style.backgroundColor = colors[i % colors.length];
+        spark.style.setProperty('--x', `${(Math.cos((i / 18) * Math.PI * 2) * (60 + Math.random() * 50))}px`);
+        spark.style.setProperty('--y', `${(Math.sin((i / 18) * Math.PI * 2) * (60 + Math.random() * 50))}px`);
+        spark.style.animationDelay = `${Math.random() * 0.1}s`;
+        fireworksLayer.appendChild(spark);
+    }
+}
+
+function stopFireworks(container) {
+    if (container.__fireworksTimer) {
+        clearInterval(container.__fireworksTimer);
+        container.__fireworksTimer = null;
+    }
+    const fireworksLayer = container.querySelector('.winner-fireworks');
+    if (fireworksLayer) {
+        fireworksLayer.innerHTML = '';
+    }
+}
+
+function startFireworksLoop(container) {
+    stopFireworks(container);
+    launchFireworks(container);
+    container.__fireworksTimer = window.setInterval(() => {
+        launchFireworks(container);
+    }, 1400);
+}
+
+function renderWinnerBanner(groups, matches = window.__worldCupMatches || []) {
+    const banner = document.getElementById('winner-banner');
+    if (!banner) return;
+
+    const finalMatch = Array.isArray(matches)
+        ? matches.find(match => match.stage === 'FINAL' && match.status === 'FINISHED')
+        : null;
+
+    if (!finalMatch) {
+        banner.hidden = true;
+        banner.classList.remove('visible');
+        banner.innerHTML = '';
+        stopFireworks(banner);
+        return;
+    }
+
+    const fullTime = finalMatch.score?.fullTime;
+    const homeGoals = fullTime?.home ?? finalMatch.score?.regularTime?.home;
+    const awayGoals = fullTime?.away ?? finalMatch.score?.regularTime?.away;
+
+    if (homeGoals === undefined || awayGoals === undefined || homeGoals === null || awayGoals === null) {
+        banner.hidden = true;
+        banner.classList.remove('visible');
+        banner.innerHTML = '';
+        stopFireworks(banner);
+        return;
+    }
+
+    const winnerCode = homeGoals > awayGoals ? finalMatch.homeTeam?.tla : awayGoals > homeGoals ? finalMatch.awayTeam?.tla : null;
+
+    if (!winnerCode) {
+        banner.hidden = true;
+        banner.classList.remove('visible');
+        banner.innerHTML = '';
+        stopFireworks(banner);
+        return;
+    }
+
+    const participant = getParticipantForTeam(winnerCode);
+    const flag = teamFlagMap[winnerCode] || '🏆';
+    const participantName = participant ? participant.name : 'Unknown picker';
+
+    banner.innerHTML = `
+        <div class="winner-fireworks"></div>
+        <div class="winner-title">Champion of the World</div>
+        <div class="winner-content">
+            <span class="winner-flag">${flag}</span>
+            <div>
+                <div class="winner-name">${participantName}</div>
+                <div class="winner-team">${winnerCode} • ${homeGoals} - ${awayGoals}</div>
+            </div>
+            <div class="winner-score">Winner</div>
+        </div>
+    `;
+    banner.classList.add('visible');
+    banner.hidden = false;
+    banner.style.display = 'block';
+    startFireworksLoop(banner);
+}
+
 function buildGroupData(matches) {
     const groups = {};
 
@@ -681,6 +784,8 @@ function renderGroupsByDate(groups) {
             todayCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 0);
     }
+
+    renderWinnerBanner(groups, window.__worldCupMatches || []);
 }
 
 function renderGroups(groups) {
@@ -740,6 +845,8 @@ function renderGroups(groups) {
 
         container.appendChild(card);
     });
+
+    renderWinnerBanner(groups, window.__worldCupMatches || []);
 }
 
 function showError(message) {
@@ -800,6 +907,9 @@ function setupTabs() {
             } else if (tab === 'bydate') {
                 renderGroupsByDate(currentGroups);
             }
+            requestAnimationFrame(() => {
+                renderWinnerBanner(currentGroups, window.__worldCupMatches || []);
+            });
         });
     });
     
@@ -816,6 +926,8 @@ async function init() {
     projectLast32FromStandings(groups);
     calculateParticipantScores(groups);
     renderLeaderboard();
+    window.__worldCupMatches = matches;
+    renderWinnerBanner(groups, matches);
     
     const setCurrentGroups = setupTabs();
     setCurrentGroups(groups);
